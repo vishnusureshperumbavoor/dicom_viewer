@@ -3,7 +3,7 @@ const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
 // const sampleDcmPath = "./samples/0002.DCM";
-const sampleDcmPath = "./samples/DISCIMG/IMAGES/CRIMAGEA";
+const sampleDcmPath = "./samples/CR-MONO1-10-chest";
 const express = require("express");
 const cors = require("cors");
 const dicomParser = require("dicom-parser")
@@ -43,13 +43,10 @@ app.get("/getData", (req, res) => {
         }
 
         /// Reading patient name
-        var patientName = dcmData.dataset["00100010"].value;
-
-        /// Reading pixel data
-        // var pixelData = dcmData.pixelData;
+        const patientName = dcmData.dataset["00100010"].value;
         const pixelDataElement = dcmData.dataset["7FE00010"].value;
-        const pixelData = new Uint16Array(pixelDataElement);
-        res.send({ patientName, pixelData });
+        // const pixelData = new Uint8Array(pixelDataElement);
+        res.send({ patientName, pixelDataElement });
       } else {
         console.log(err);
         res.send(err);

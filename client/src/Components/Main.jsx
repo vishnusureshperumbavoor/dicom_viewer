@@ -1,11 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import cornerstone from "cornerstone-core";
-import cornerstoneTools from "cornerstone-tools";
 const serverURL = "http://localhost:5000";
-
-cornerstoneTools.external.cornerstone = cornerstone;
-cornerstoneTools.init();
 
 function Main() {
   const [patientName, setPatientName] = useState("");
@@ -17,10 +12,14 @@ function Main() {
     axios
       .get(`${serverURL}/getData`)
       .then((response) => {
-        const { patientName, pixelData } = response.data;
-        const blob = new Blob([pixelData]);
+        const { patientName, pixelDataElement } = response.data;
+        const pixelData = new Uint8Array(pixelDataElement.data);
+        console.log(pixelData);
+        const blob = new Blob([pixelData], { type: "image/jpeg" });
+        console.log(blob);
         const dataURL = URL.createObjectURL(blob);
-        
+        console.log(dataURL);
+
         setPatientName(patientName);
         setImageSrc(dataURL);
 
@@ -42,6 +41,7 @@ function Main() {
       <h1>{patientName}</h1>
       <p>{imageSrc}</p>
       {/* <img src={imageSrc} alt="" /> */}
+      <img id="image-container" src="" alt="" />
       <div id="dicomImage"></div>
       <canvas
         ref={canvasRef}
