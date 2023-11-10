@@ -30,6 +30,7 @@ module.exports = {
 
         for (var i = position; i < position + length; i++) {
             data += String.fromCharCode(buffer[i]);
+            // console.log(data);
         }
 
         return data;

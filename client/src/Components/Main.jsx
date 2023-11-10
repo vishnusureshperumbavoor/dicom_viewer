@@ -1,20 +1,60 @@
-import React, { useEffect } from "react";
-const axios = require("axios");
+import React, { useEffect, useState, useRef } from "react";
+import axios from "axios";
 export const serverURL = "http://localhost:5000";
 
 function Main() {
+  const [patientName, setPatientName] = useState("");
+  const [imageSrc, setImageSrc] = useState("");
+
+  const canvasRef = useRef(null);
   useEffect(() => {
     axios
-      .getAdapter(`${serverURL}/getPatientName`)
+      .get(`${serverURL}/getData`)
       .then((response) => {
-        console.log("patientname = " + response.data);
+        const { patientName, pixelData } = response.data;
+        setPatientName(patientName);
+        const uint8Array = new Uint8Array(pixelData);
+        const blob = new Blob([uint8Array]);
+        const dataURL = URL.createObjectURL(blob);
+        alert(dataURL);
+        setImageSrc(dataURL);
+
+        const image = new Image();
+        image.src = dataURL;
+        image.onload = () => {
+          const canvas = canvasRef.current;
+          const context = canvas.getContext("2d");
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        };
       })
-      .catch((error) => {
+      .catch((err) => {
         console.log("error");
       });
   }, []);
 
-  return <div></div>;
+  const handleDownload= ()=>{
+    const dlink = document.createElement('a')
+    dlink.href = imageSrc;
+    dlink.download = 'download.png'
+    document.body.appendChild(dlink)
+    dlink.click()
+    document.body.removeChild(dlink)
+  }
+
+  return (
+    <div>
+      <h1>{patientName}</h1>
+      <p>{imageSrc}</p>
+      <img src={imageSrc} alt="" />
+      <canvas
+        ref={canvasRef}
+        width={800}
+        height={600}
+        style={{ border: "1px solid #000" }}
+      ></canvas>
+      <button onClick={handleDownload}>download</button>
+    </div>
+  );
 }
 
 export default Main;
