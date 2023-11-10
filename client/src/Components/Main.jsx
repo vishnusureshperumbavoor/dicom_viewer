@@ -1,22 +1,27 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-export const serverURL = "http://localhost:5000";
+import cornerstone from "cornerstone-core";
+import cornerstoneTools from "cornerstone-tools";
+const serverURL = "http://localhost:5000";
+
+cornerstoneTools.external.cornerstone = cornerstone;
+cornerstoneTools.init();
 
 function Main() {
   const [patientName, setPatientName] = useState("");
   const [imageSrc, setImageSrc] = useState("");
 
   const canvasRef = useRef(null);
+
   useEffect(() => {
     axios
       .get(`${serverURL}/getData`)
       .then((response) => {
         const { patientName, pixelData } = response.data;
-        setPatientName(patientName);
-        const uint8Array = new Uint8Array(pixelData);
-        const blob = new Blob([uint8Array]);
+        const blob = new Blob([pixelData]);
         const dataURL = URL.createObjectURL(blob);
-        alert(dataURL);
+        
+        setPatientName(patientName);
         setImageSrc(dataURL);
 
         const image = new Image();
@@ -32,27 +37,18 @@ function Main() {
       });
   }, []);
 
-  const handleDownload= ()=>{
-    const dlink = document.createElement('a')
-    dlink.href = imageSrc;
-    dlink.download = 'download.png'
-    document.body.appendChild(dlink)
-    dlink.click()
-    document.body.removeChild(dlink)
-  }
-
   return (
     <div>
       <h1>{patientName}</h1>
       <p>{imageSrc}</p>
-      <img src={imageSrc} alt="" />
+      {/* <img src={imageSrc} alt="" /> */}
+      <div id="dicomImage"></div>
       <canvas
         ref={canvasRef}
         width={800}
         height={600}
         style={{ border: "1px solid #000" }}
       ></canvas>
-      <button onClick={handleDownload}>download</button>
     </div>
   );
 }
