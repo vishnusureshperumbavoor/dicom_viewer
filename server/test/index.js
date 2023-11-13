@@ -15,8 +15,12 @@ app.get("/getData", (req, res) => {
       if (!err) {
         const patientName = dcmData.dataset["00100010"].value;
         const pixelData = dcmData.dataset["7FE00010"].value;
-        console.log(pixelData);
-        res.send({ patientName, pixelData });
+        const height = dcmData.dataset["00280010"].value;
+        const width = dcmData.dataset["00280011"].value;
+        const monochrome = dcmData.dataset["00280004"].value;
+        // console.log(dcmData);
+        // console.log(pixelData);
+        res.send({ patientName, pixelData, height, width });
       } else {
         console.log(err);
         res.send(err);

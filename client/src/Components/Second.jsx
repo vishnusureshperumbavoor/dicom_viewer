@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 const imageURL =
   "https://images.pexels.com/photos/268533/pexels-photo-268533.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500";
 
 function Second() {
+  const navigate = useNavigate();
   useEffect(() => {
     const myCanvas = document.getElementById("myCanvas");
     const myContext = myCanvas.getContext("2d");
@@ -17,7 +19,9 @@ function Second() {
         myCanvas.width,
         myCanvas.height
       );
+
       const arr = imageData.data;
+
       for (var i = 0; i < arr.length; i += 4) {
         var brightness = 0.34 * arr[i] + 0.5 * arr[i + 1] + 0.16 * arr[i + 2];
         arr[i] = brightness;
@@ -40,7 +44,7 @@ function Second() {
 
   return (
     <div>
-      <h1>Grayscale</h1>
+      <h1 onClick={() => navigate("/")}>First Page</h1>
       <canvas
         id="myCanvas"
         width="400"
