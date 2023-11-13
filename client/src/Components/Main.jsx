@@ -15,7 +15,7 @@ function Main() {
         const { patientName, pixelDataElement } = response.data;
         const pixelData = new Uint8Array(pixelDataElement.data);
         console.log(pixelData);
-        const blob = new Blob([pixelData], { type: "image/jpeg" });
+        const blob = new Blob([pixelData], { type: "image/png" });
         console.log(blob);
         const dataURL = URL.createObjectURL(blob);
         console.log(dataURL);
@@ -28,6 +28,8 @@ function Main() {
         image.onload = () => {
           const canvas = canvasRef.current;
           const context = canvas.getContext("2d");
+          canvas.width = image.width;
+          canvas.height = image.height;
           context.drawImage(image, 0, 0, canvas.width, canvas.height);
         };
       })
