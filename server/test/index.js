@@ -18,6 +18,11 @@ app.get("/getData", (req, res) => {
         const height = dcmData.dataset["00280010"].value;
         const width = dcmData.dataset["00280011"].value;
         const monochrome = dcmData.dataset["00280004"].value;
+        console.log(patientName);
+        console.log(pixelData);
+        console.log(height);
+        console.log(width);
+        console.log(monochrome);
         // console.log(dcmData);
         // console.log(pixelData);
         res.send({ patientName, pixelData, height, width });
