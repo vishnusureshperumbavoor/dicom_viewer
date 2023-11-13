@@ -12,10 +12,11 @@ function Main() {
     axios
       .get(`${serverURL}/getData`)
       .then((response) => {
-        const { patientName, pixelDataElement } = response.data;
-        const pixelData = new Uint8Array(pixelDataElement.data);
+        const { patientName, pixelData } = response.data;
         console.log(pixelData);
-        const blob = new Blob([pixelData], { type: "image/png" });
+        const uint8Array = new Uint8Array(pixelData.data);
+        console.log(uint8Array);
+        const blob = new Blob([uint8Array], { type: "image/png" });
         console.log(blob);
         const dataURL = URL.createObjectURL(blob);
         console.log(dataURL);
