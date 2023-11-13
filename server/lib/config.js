@@ -1,15 +1,19 @@
 /**
  * Author  : Ramesh R
- * Created : 7/17/2015 12:31 AM
+ * Created : 7/19/2015 7:41 PM
  * ----------------------------------------------------------------------
  * This file is subject to the terms and conditions defined in
  * file 'LICENSE', which is part of this source code package.
  * ----------------------------------------------------------------------
  */
 
-var lib = require(__dirname + '/lib');
-
 module.exports = {
-    parse: lib.parse,
-    parseFile: lib.parseFile
+
+    setOptions: function (options) {
+        for (var key in options) {
+            if (this.hasOwnProperty(key)) {
+                this[key] = options[key];
+            }
+        }
+    }
 };

@@ -13,45 +13,35 @@ function Main() {
       .get(`${serverURL}/getData`)
       .then((response) => {
         const { patientName, pixelData } = response.data;
-        console.log(pixelData);
-        const uint8Array = new Uint8Array(pixelData.data);
-        console.log(uint8Array);
-        const blob = new Blob([uint8Array], { type: "image/png" });
-        console.log(blob);
-        const dataURL = URL.createObjectURL(blob);
-        console.log(dataURL);
-
         setPatientName(patientName);
-        setImageSrc(dataURL);
+        const arr = new Uint8ClampedArray(pixelData.data);
+        // const blob = new Blob([arr.buffer], { type: "image/png" });
+        let image = new Image(arr,200,200)
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+        ctx.putImageData(image,20,20)
+        // const url = URL.createObjectURL(blob);
+        // setImageSrc(url);
 
-        const image = new Image();
-        image.src = dataURL;
-        image.onload = () => {
-          const canvas = canvasRef.current;
-          const context = canvas.getContext("2d");
-          canvas.width = image.width;
-          canvas.height = image.height;
-          context.drawImage(image, 0, 0, canvas.width, canvas.height);
-        };
+        // const img = new Image();
+        // img.onload = () => {
+        //   canvas.width = img.width;
+        //   canvas.height = img.height;
+        //   ctx.drawImage(img, 0, 0);
+        // };
+        // img.src = url;
       })
       .catch((err) => {
         console.log("error");
+        console.log(err);
       });
   }, []);
 
   return (
     <div>
       <h1>{patientName}</h1>
-      <p>{imageSrc}</p>
-      {/* <img src={imageSrc} alt="" /> */}
-      <img id="image-container" src="" alt="" />
-      <div id="dicomImage"></div>
-      <canvas
-        ref={canvasRef}
-        width={800}
-        height={600}
-        style={{ border: "1px solid #000" }}
-      ></canvas>
+      <h2>{imageSrc}</h2>
+      <canvas ref={canvasRef} id="vspcanvas"></canvas>
     </div>
   );
 }
