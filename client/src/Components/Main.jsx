@@ -1,7 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import PrimaryShapeButton from "./PrimaryShapeButton";
-import { drawPoints,findClickedLine} from "../Functions/Line";
+import {
+  drawPoints,
+  findClickedLine,
+  handleLineClick,
+} from "../Functions/Line";
+import { handleAngleClick, drawAngles } from "../Functions/Angle";
 const serverURL = "http://localhost:5000";
 
 function Main() {
@@ -9,8 +14,10 @@ function Main() {
   const [patientName, setPatientName] = useState("");
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
+  const [lines, setLines] = useState([]);
   const [clickedPoints, setClickedPoints] = useState([]);
   const [selectedShape, setSelectedShape] = useState("Line");
+  const [angles, setAngles] = useState([]);
 
   useEffect(() => {
     axios
@@ -33,26 +40,47 @@ function Main() {
           imgData.data[j++] = 255;
         }
         ctx.putImageData(imgData, 0, 0);
-        drawPoints(ctx, clickedPoints);
+        lines.forEach((line) => {
+          drawPoints(ctx, line);
+        });
+        drawAngles(ctx, angles);
       })
       .catch((err) => {
         console.log("error");
       });
-  }, [clickedPoints]);
+  }, [clickedPoints, lines]);
 
   const handleCanvasClick = (event) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const clickedLine = findClickedLine({x,y},clickedPoints)
-    if(clickedLine){
-      if(window.confirm("Do you want to delete the line?")){
-        setClickedPoints([])
-      }
-    }
-    else if (clickedPoints.length < 2 && selectedShape === "Line") {
-      setClickedPoints([...clickedPoints, { x, y }]);
+
+    switch (selectedShape) {
+      case "Line":
+        handleLineClick(x, y, lines, setLines);
+        const clickedLine = findClickedLine({ x, y }, clickedPoints);
+        if (clickedLine) {
+          if (window.confirm("Do you want to delete the line?")) {
+            setClickedPoints([]);
+          }
+        }
+        break;
+      case "Angle":
+        handleAngleClick(
+          { x, y },
+          setAngles,
+          angles,
+          setClickedPoints,
+          clickedPoints
+        );
+        break;
+      case "Cirle":
+        break;
+      case "Rectangle":
+        break;
+      default:
+        break;
     }
   };
 
@@ -63,7 +91,10 @@ function Main() {
   return (
     <div>
       <h1>Patient Name : {patientName}</h1>
-      <PrimaryShapeButton handleShapeSelection={handleShapeSelection} selectedShape={selectedShape} />
+      <PrimaryShapeButton
+        handleShapeSelection={handleShapeSelection}
+        selectedShape={selectedShape}
+      />
       <canvas
         ref={canvasRef}
         onClick={handleCanvasClick}

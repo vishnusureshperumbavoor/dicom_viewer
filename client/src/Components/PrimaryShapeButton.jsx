@@ -4,7 +4,6 @@ import { Box } from "@mui/material";
 
 function PrimaryShapeButton({ handleShapeSelection, selectedShape }) {
   const shapeButtons = ["Line", "Angle", "Circle", "Rectangle"];
-  const [selectedButton,setSelectedButton] = useState(null)
   return (
     <div>
       <Box

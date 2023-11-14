@@ -1,3 +1,15 @@
+export const handleLineClick = (x, y,lines,setLines) => {
+  if (lines.length % 2 === 0) {
+    // If the number of lines is even, start a new line
+    setLines([...lines, [{ x, y }]]);
+  } else {
+    // If the number of lines is odd, complete the current line
+    const updatedLines = [...lines];
+    updatedLines[lines.length - 1].push({ x, y });
+    setLines(updatedLines);
+  }
+};
+
 export const drawPoints = (ctx, points) => {
   const firstDotColor = "red";
   const secondDotColor = "red";
