@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import PrimaryShapeButton from "./PrimaryShapeButton";
-import { Box } from "@mui/material";
 const serverURL = "http://localhost:5000";
 
 function Main() {
@@ -10,9 +9,7 @@ function Main() {
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
   const [clickedPoints, setClickedPoints] = useState([]);
-  const [selectedShape, setSelectedShape] = useState(null);
-
-  const shapeButtons = ["Line", "Angle", "Circle", "Rectangle"];
+  const [selectedShape, setSelectedShape] = useState("Line");
 
   useEffect(() => {
     axios
@@ -48,6 +45,7 @@ function Main() {
     const lineColor = "blue";
     const textColor = "white";
     const textStrokeColor = "black";
+    const normalColor = "green"
 
     // designing first dot
     ctx.fillStyle = firstDotColor;
@@ -61,7 +59,7 @@ function Main() {
     ctx.arc(points[1].x, points[1].y, 5, 0, 2 * Math.PI);
     ctx.fill();
 
-    // draw line between points
+    // line between points
     const distance = calculateDistance(points[0], points[1]);
     const midPoint = {
       x: (points[0].x + points[1].x) / 2,
@@ -72,6 +70,25 @@ function Main() {
     ctx.lineTo(points[1].x, points[1].y);
     ctx.strokeStyle = lineColor;
     ctx.stroke();
+
+    // normal line
+    const normalSlope = -1 / calculateSlope(points[0], points[1]);
+    const normalStart = {
+      x: midPoint.x - 50,
+      y: midPoint.y - 50 * normalSlope,
+    };
+    const normalEnd = {
+      x: midPoint.x + 50,
+      y: midPoint.y + 50 * normalSlope,
+    };
+
+    ctx.beginPath();
+    ctx.setLineDash([10, 5]);
+    ctx.moveTo(normalStart.x, normalStart.y);
+    ctx.lineTo(normalEnd.x, normalEnd.y);
+    ctx.strokeStyle = normalColor;
+    ctx.stroke();
+    ctx.setLineDash([]);
 
     // display the distance on the line
     ctx.fillStyle = textColor;
@@ -99,36 +116,23 @@ function Main() {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    if (clickedPoints.length < 2) {
+    if (clickedPoints.length < 2 && selectedShape === "Line") {
       setClickedPoints([...clickedPoints, { x, y }]);
     }
   };
 
   const handleShapeSelection = (shape) => {
-    setSelectedShape(shape.toLowerCase());
-  };
-
-  const handleButtonClick = (shape) => {
-    alert(shape);
     setSelectedShape(shape);
   };
+
+  const calculateSlope = (point1, point2) => {
+    return (point2.y - point1.y) / (point2.x - point1.x);
+  };
+
   return (
     <div>
       <h1>Patient Name : {patientName}</h1>
-      {/* <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "center",
-          mb: 3,
-        }}
-      >
-        {shapeButtons.map((label) => (
-          <> */}
       <PrimaryShapeButton handleShapeSelection={handleShapeSelection} />
-      {/* </>
-        ))}
-      </Box> */}
       <canvas
         ref={canvasRef}
         onClick={handleCanvasClick}
