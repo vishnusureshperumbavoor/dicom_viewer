@@ -63,7 +63,7 @@ function Main() {
   return (
     <div>
       <h1>Patient Name : {patientName}</h1>
-      <PrimaryShapeButton handleShapeSelection={handleShapeSelection} />
+      <PrimaryShapeButton handleShapeSelection={handleShapeSelection} selectedShape={selectedShape} />
       <canvas
         ref={canvasRef}
         onClick={handleCanvasClick}
