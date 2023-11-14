@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import PrimaryShapeButton from "./PrimaryShapeButton";
+import { Box } from "@mui/material";
 const serverURL = "http://localhost:5000";
 
 function Main() {
@@ -8,6 +10,9 @@ function Main() {
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
   const [clickedPoints, setClickedPoints] = useState([]);
+  const [shape, setShape] = useState("");
+
+  const shapeButtons = ["Line", "Angle", "Circle", "Rectangle"];
 
   useEffect(() => {
     axios
@@ -41,6 +46,8 @@ function Main() {
     const firstDotColor = "red";
     const secondDotColor = "red";
     const lineColor = "blue";
+    const textColor = "white";
+    const textStrokeColor = "black";
 
     // designing first dot
     ctx.fillStyle = firstDotColor;
@@ -67,9 +74,18 @@ function Main() {
     ctx.stroke();
 
     // display the distance on the line
-    ctx.fillStyle = lineColor;
+    ctx.fillStyle = textColor;
+    ctx.strokeStyle = textStrokeColor;
+    ctx.lineWidth = 2;
     ctx.font = "14px Arial";
-    ctx.fillText(`${distance.toFixed(2)}mm`, midPoint.x, midPoint.y);
+
+    const text = `${distance.toFixed(2)}mm`;
+    const textWidth = ctx.measureText(text).width;
+    const textX = midPoint.x - textWidth / 2;
+    const textY = midPoint.y;
+
+    ctx.fillText(text, textX, textY);
+    // ctx.strokeText(text, textX, textY);
   };
 
   const calculateDistance = (point1, point2) => {
@@ -87,9 +103,31 @@ function Main() {
       setClickedPoints([...clickedPoints, { x, y }]);
     }
   };
+
+  const handleButtonClick = (shape) => {
+    setShape(shape);
+  };
   return (
     <div>
       <h1>Patient Name : {patientName}</h1>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
+          mb: 3,
+        }}
+      >
+        {shapeButtons.map((label) => (
+          <>
+            <PrimaryShapeButton
+              key={label}
+              label={label}
+              onClick={() => handleButtonClick(label.toLowerCase())}
+            />
+          </>
+        ))}
+      </Box>
       <canvas
         ref={canvasRef}
         onClick={handleCanvasClick}
