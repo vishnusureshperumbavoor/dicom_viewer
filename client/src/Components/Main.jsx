@@ -10,7 +10,7 @@ function Main() {
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
   const [clickedPoints, setClickedPoints] = useState([]);
-  const [shape, setShape] = useState("");
+  const [selectedShape, setSelectedShape] = useState(null);
 
   const shapeButtons = ["Line", "Angle", "Circle", "Rectangle"];
 
@@ -104,8 +104,13 @@ function Main() {
     }
   };
 
+  const handleSelectedShape = (shape) => {
+    setSelectedShape(shape.toLowerCase());
+  };
+
   const handleButtonClick = (shape) => {
-    setShape(shape);
+    alert(shape);
+    setSelectedShape(shape);
   };
   return (
     <div>
@@ -120,14 +125,11 @@ function Main() {
       >
         {shapeButtons.map((label) => (
           <>
-            <PrimaryShapeButton
-              key={label}
-              label={label}
-              onClick={() => handleButtonClick(label.toLowerCase())}
-            />
+            <PrimaryShapeButton key={label} label={label} />
           </>
         ))}
       </Box>
+      {selectedShape}
       <canvas
         ref={canvasRef}
         onClick={handleCanvasClick}
