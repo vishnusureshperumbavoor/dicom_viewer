@@ -73,3 +73,29 @@ const calculateDistance = (point1, point2) => {
 const calculateSlope = (point1, point2) => {
   return (point2.y - point1.y) / (point2.x - point1.x);
 };
+
+export const findClickedLine = (mousePos,clickedPoints) => {
+  for (const line of clickedPoints.slice(0, -1)) {
+    const start = line;
+    const end = clickedPoints[clickedPoints.indexOf(line) + 1];
+    if (pointOnLine(mousePos, { start, end }, 5)) {
+      return { start, end };
+    }
+  }
+};
+
+const pointOnLine = (point,line,tolerance) =>{
+    const distance =
+      Math.abs(
+        (line.end.y - line.start.y) * point.x -
+          (line.end.x - line.start.x) * point.y +
+          line.end.x * line.start.y -
+          line.end.y * line.start.x
+      ) /
+      Math.sqrt(
+        Math.pow(line.end.y - line.start.y, 2) +
+          Math.pow(line.end.x - line.start.x, 2)
+      );
+
+    return distance < tolerance;
+}

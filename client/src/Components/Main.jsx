@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import PrimaryShapeButton from "./PrimaryShapeButton";
-import { drawPoints } from "../Functions/Line";
+import { drawPoints,findClickedLine} from "../Functions/Line";
 const serverURL = "http://localhost:5000";
 
 function Main() {
@@ -45,7 +45,13 @@ function Main() {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    if (clickedPoints.length < 2 && selectedShape === "Line") {
+    const clickedLine = findClickedLine({x,y},clickedPoints)
+    if(clickedLine){
+      if(window.confirm("Do you want to delete the line?")){
+        setClickedPoints([])
+      }
+    }
+    else if (clickedPoints.length < 2 && selectedShape === "Line") {
       setClickedPoints([...clickedPoints, { x, y }]);
     }
   };
