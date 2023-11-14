@@ -104,7 +104,7 @@ function Main() {
     }
   };
 
-  const handleSelectedShape = (shape) => {
+  const handleShapeSelection = (shape) => {
     setSelectedShape(shape.toLowerCase());
   };
 
@@ -115,7 +115,7 @@ function Main() {
   return (
     <div>
       <h1>Patient Name : {patientName}</h1>
-      <Box
+      {/* <Box
         sx={{
           display: "flex",
           flexDirection: "row",
@@ -124,12 +124,11 @@ function Main() {
         }}
       >
         {shapeButtons.map((label) => (
-          <>
-            <PrimaryShapeButton key={label} label={label} />
-          </>
+          <> */}
+      <PrimaryShapeButton handleShapeSelection={handleShapeSelection} />
+      {/* </>
         ))}
-      </Box>
-      {selectedShape}
+      </Box> */}
       <canvas
         ref={canvasRef}
         onClick={handleCanvasClick}
