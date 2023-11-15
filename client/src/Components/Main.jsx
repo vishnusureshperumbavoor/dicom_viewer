@@ -92,25 +92,25 @@ function Main() {
         }
         break;
       case "Angle":
-        // const clickedAngle = findClickedAngle({ x, y }, anglePoints);
-        // if (clickedAngle) {
-        //   if (window.confirm("Do you want to delete the angle?")) {
-        //     const updatedAngles = anglePoints.filter((angle) => {
-        //       const isEqual =
-        //         angle.x === clickedAngle.x && angle.y === clickedAngle.y;
-        //       return !isEqual;
-        //     });
-        //     setAnglePoints(updatedAngles);
-        //   }
-        // } else {
-        setAnglePoints((points) => [...points, { x, y }]);
-        handleAngleClick(
-          { x, y },
-          angleCoordinates,
-          setAngleCoordinates,
-          anglePoints
-        );
-        // }
+        const clickedAngle = findClickedAngle({ x, y }, angleCoordinates);
+        console.log(clickedAngle);
+        if (clickedAngle) {
+          console.log("clicked on angle");
+          // if (window.confirm("Do you want to delete the angle?")) {
+          //   const updatedAngles = angleCoordinates.filter((angle) => {
+          //     return angle.id !== clickedAngle.id;
+          //   });
+          //   setAngleCoordinates(updatedAngles);
+          // }
+        } else {
+          setAnglePoints((points) => [...points, { x, y }]);
+          handleAngleClick(
+            { x, y },
+            angleCoordinates,
+            setAngleCoordinates,
+            anglePoints
+          );
+        }
         break;
       default:
         break;

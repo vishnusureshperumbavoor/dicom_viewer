@@ -24,15 +24,31 @@ export const drawAngles = (ctx, start, end1, end2) => {
   ctx.fillText(`${angleDegrees.toFixed(2)}°`, midPoint.x, midPoint.y);
 };
 
-export const findClickedAngle = (mousePos, points) => {
-  for (const line of points.slice(0, -1)) {
-    const start = line;
-    const end = points[points.indexOf(line) + 1];
-    if (pointOnLine(mousePos, { start, end }, 5)) {
-      return { start, end };
-    }
-  }
+export const findClickedAngle = (mousePos, clickedPoints) => {
+  // const tolearnce = 5;
+  // for (const line of clickedPoints.slice(0, -1)) {
+  //   const start = line;
+  //   if (pointOnLine(mousePos, start, tolearnce)) {
+  //     return { start, end };
+  //   }
+  // }
 };
+
+// const pointOnAngle = (mousePos, angle) => {
+//   const distance =
+//     Math.abs(
+//       (line.end.y - line.start.y) * point.x -
+//         (line.end.x - line.start.x) * point.y +
+//         line.end.x * line.start.y -
+//         line.end.y * line.start.x
+//     ) /
+//     Math.sqrt(
+//       Math.pow(line.end.y - line.start.y, 2) +
+//         Math.pow(line.end.x - line.start.x, 2)
+//     );
+
+//   return distance < tolerance;
+// };
 
 const pointOnLine = (point, line, tolerance) => {
   const distance =
@@ -57,7 +73,7 @@ export const handleAngleClick = (
   anglePoints
 ) => {
   if (anglePoints.length % 3 === 0) {
-    const newAngleObject = { id: new Date().getTime(), points: [{x,y}] };
+    const newAngleObject = { id: new Date().getTime(), points: [{ x, y }] };
     setAngleCoordinates([...angleCoordinates, newAngleObject]);
   } else {
     const updatedAnglePoints = [...angleCoordinates];
