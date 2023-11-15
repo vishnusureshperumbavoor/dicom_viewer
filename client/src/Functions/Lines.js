@@ -1,23 +1,21 @@
-
-
-export const drawLines = (ctx, points) => {
+export const drawLines = (ctx, start, end) => {
   const lineColor = "blue";
   const textColor = "white";
   const textStrokeColor = "black";
   const normalColor = "green";
-  
+
   // line between points
   ctx.beginPath();
-  ctx.moveTo(points[0].x, points[0].y);
-  ctx.lineTo(points[1].x, points[1].y);
+  ctx.moveTo(start.x, start.y);
+  ctx.lineTo(end.x, end.y);
   ctx.strokeStyle = lineColor;
   ctx.stroke();
 
   // display the distance on the line
-  const distance = calculateDistance(points[0], points[1]);
+  const distance = calculateDistance(start, end);
   const midPoint = {
-    x: (points[0].x + points[1].x) / 2,
-    y: (points[0].y + points[1].y) / 2,
+    x: (start.x + end.x) / 2,
+    y: (start.y + end.y) / 2,
   };
   ctx.fillStyle = textColor;
   ctx.strokeStyle = textStrokeColor;
@@ -33,7 +31,7 @@ export const drawLines = (ctx, points) => {
   // ctx.strokeText(text, textX, textY);
 
   // normal line
-  const normalSlope = -1 / calculateSlope(points[0], points[1]);
+  const normalSlope = -1 / calculateSlope(start, end);
   const normalStart = {
     x: midPoint.x - 50,
     y: midPoint.y - 50 * normalSlope,
