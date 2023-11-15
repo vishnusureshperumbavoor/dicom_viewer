@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import PrimaryShapeButton from "./PrimaryShapeButton";
-import { drawPoints, findClickedLine } from "../Functions/Line";
+import { drawPoints } from "../Functions/Points";
+import { findClickedLine } from "../Functions/Lines";
+import { drawAngles } from "../Functions/Angles";
 const serverURL = "http://localhost:5000";
 
 function Main() {
@@ -9,7 +11,8 @@ function Main() {
   const [patientName, setPatientName] = useState("");
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
-  const [clickedPoints, setClickedPoints] = useState([]);
+  const [linePoints, setLinePoints] = useState([]);
+  const [anglePoints, setAnglePoints] = useState([]);
   const [selectedShape, setSelectedShape] = useState("Line");
 
   useEffect(() => {
@@ -33,12 +36,13 @@ function Main() {
           imgData.data[j++] = 255;
         }
         ctx.putImageData(imgData, 0, 0);
-        drawPoints(ctx, clickedPoints);
+        const penultimatePoints = linePoints.slice(-2)
+        drawPoints(ctx, penultimatePoints);
       })
       .catch((err) => {
         console.log("error");
       });
-  }, [clickedPoints]);
+  }, [linePoints, anglePoints]);
 
   const handleCanvasClick = (event) => {
     const canvas = canvasRef.current;
@@ -47,17 +51,17 @@ function Main() {
     const y = event.clientY - rect.top;
     switch (selectedShape) {
       case "Line":
-        const clickedLine = findClickedLine({ x, y }, clickedPoints);
+        const clickedLine = findClickedLine({ x, y }, linePoints);
         if (clickedLine) {
           if (window.confirm("Do you want to delete the line?")) {
-            setClickedPoints([]);
+            setLinePoints([]);
           }
-        } else if (clickedPoints.length < 2) {
-          setClickedPoints([...clickedPoints, { x, y }]);
+        } else {
+          setLinePoints([...linePoints, { x, y }]);
         }
         break;
       case "Angle":
-        alert("cliked on angle");
+        setAnglePoints([...anglePoints, { x, y }]);
         break;
       default:
         break;
