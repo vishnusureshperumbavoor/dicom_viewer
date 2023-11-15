@@ -2,7 +2,11 @@ import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import PrimaryShapeButton from "./PrimaryShapeButton";
 import { drawPoints } from "../Functions/Points";
-import { drawLines, findClickedLine } from "../Functions/Lines";
+import {
+  drawLines,
+  drawTemporaryLine,
+  findClickedLine,
+} from "../Functions/Lines";
 import { drawAngles } from "../Functions/Angles";
 const serverURL = "http://localhost:5000";
 
@@ -12,7 +16,6 @@ function Main() {
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
   const [linePoints, setLinePoints] = useState([]);
-  const [points, setPoints] = useState([]);
   const [anglePoints, setAnglePoints] = useState([]);
   const [selectedShape, setSelectedShape] = useState("Line");
 
@@ -46,15 +49,24 @@ function Main() {
             drawLines(ctx, startPoint, endPoint);
           }
         }
+
+        anglePoints.forEach((point) => drawPoints(ctx, point.x, point.y));
+        if (anglePoints.length >= 3) {
+          for (let i = 0; i < anglePoints.length - 1; i = i + 3) {
+            const startPoint = anglePoints[i];
+            const endPoint1 = anglePoints[i + 1];
+            const endPoint2 = anglePoints[i + 2];
+            drawAngles(ctx, startPoint, endPoint1, endPoint2);
+          }
+        }
       })
       .catch((err) => {
         console.log("error");
       });
-  }, [linePoints]);
+  }, [linePoints, anglePoints]);
 
   const handleCanvasClick = (event) => {
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;

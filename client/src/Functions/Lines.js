@@ -1,8 +1,9 @@
+const lineColor = "blue";
+const textColor = "white";
+const textStrokeColor = "black";
+const normalColor = "green";
+
 export const drawLines = (ctx, start, end) => {
-  const lineColor = "blue";
-  const textColor = "white";
-  const textStrokeColor = "black";
-  const normalColor = "green";
 
   // line between points
   ctx.beginPath();
@@ -84,4 +85,12 @@ const pointOnLine = (point, line, tolerance) => {
     );
 
   return distance < tolerance;
+};
+
+export const drawTemporaryLine = (ctx, start, end) => {
+  ctx.beginPath();
+  ctx.moveTo(start.x, start.y);
+  ctx.lineTo(end.x, end.y);
+  ctx.strokeStyle = lineColor;
+  ctx.stroke()
 };

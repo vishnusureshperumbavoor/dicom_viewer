@@ -1,30 +1,26 @@
-export const drawAngles = (ctx, points) => {
-  const dotColor = "red";
-  const lineColor = "blue";
+const lineColor = "blue";
+const angleTextColor = "white";
+const font = "bold 15px Arial";
 
-  // designing first dot
-  ctx.fillStyle = dotColor;
+export const drawAngles = (ctx, start, end1, end2) => {
   ctx.beginPath();
-  ctx.arc(points[0].x, points[0].y, 5, 0, 2 * Math.PI);
-  ctx.fill();
-
-  // designing 2nd dot
-  ctx.fillStyle = dotColor;
-  ctx.beginPath();
-  ctx.arc(points[1].x, points[1].y, 5, 0, 2 * Math.PI);
-  ctx.fill();
-
-  // designing 3rd dot
-  ctx.fillStyle = dotColor;
-  ctx.beginPath();
-  ctx.arc(points[2].x, points[2].y, 5, 0, 2 * Math.PI);
-  ctx.fill();
-
-  // line between points
-  ctx.beginPath();
-  ctx.moveTo(points[0].x, points[0].y);
-  ctx.lineTo(points[1].x, points[1].y);
-  ctx.lineTo(points[2].x, points[2].y);
+  ctx.moveTo(start.x, start.y);
+  ctx.lineTo(end1.x, end1.y);
+  ctx.lineTo(end2.x, end2.y);
   ctx.strokeStyle = lineColor;
   ctx.stroke();
+  ctx.closePath();
+
+  const angleRadians =
+    Math.atan2(end2.y - end1.y, end2.x - end1.x) -
+    Math.atan2(start.y - end1.y, start.x - end1.x);
+  let angleDegrees = (angleRadians * 180) / Math.PI;
+  angleDegrees = angleDegrees < 0 ? angleDegrees + 360 : angleDegrees;
+  const midPoint = {
+    x: end1.x + 10,
+    y: end1.y + 10,
+  };
+  ctx.fillStyle = angleTextColor;
+  ctx.font = font;
+  ctx.fillText(`${angleDegrees.toFixed(2)}°`, midPoint.x, midPoint.y);
 };
