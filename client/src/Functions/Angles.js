@@ -17,8 +17,8 @@ export const drawAngles = (ctx, start, end1, end2) => {
   let angleDegrees = (angleRadians * 180) / Math.PI;
   angleDegrees = angleDegrees < 0 ? angleDegrees + 360 : angleDegrees;
   const midPoint = {
-    x: end1.x + 10,
-    y: end1.y + 10,
+    x: end1.x + 12,
+    y: end1.y - 12,
   };
   ctx.fillStyle = angleTextColor;
   ctx.font = font;
