@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import PrimaryShapeButton from "./PrimaryShapeButton";
-import { drawPoints,findClickedLine} from "../Functions/Line";
+import { drawPoints, findClickedLine } from "../Functions/Line";
 const serverURL = "http://localhost:5000";
 
 function Main() {
@@ -45,14 +45,22 @@ function Main() {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const clickedLine = findClickedLine({x,y},clickedPoints)
-    if(clickedLine){
-      if(window.confirm("Do you want to delete the line?")){
-        setClickedPoints([])
-      }
-    }
-    else if (clickedPoints.length < 2 && selectedShape === "Line") {
-      setClickedPoints([...clickedPoints, { x, y }]);
+    switch (selectedShape) {
+      case "Line":
+        const clickedLine = findClickedLine({ x, y }, clickedPoints);
+        if (clickedLine) {
+          if (window.confirm("Do you want to delete the line?")) {
+            setClickedPoints([]);
+          }
+        } else if (clickedPoints.length < 2) {
+          setClickedPoints([...clickedPoints, { x, y }]);
+        }
+        break;
+      case "Angle":
+        alert("cliked on angle");
+        break;
+      default:
+        break;
     }
   };
 
@@ -63,7 +71,10 @@ function Main() {
   return (
     <div>
       <h1>Patient Name : {patientName}</h1>
-      <PrimaryShapeButton handleShapeSelection={handleShapeSelection} selectedShape={selectedShape} />
+      <PrimaryShapeButton
+        handleShapeSelection={handleShapeSelection}
+        selectedShape={selectedShape}
+      />
       <canvas
         ref={canvasRef}
         onClick={handleCanvasClick}
