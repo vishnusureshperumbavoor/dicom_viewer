@@ -9,6 +9,10 @@ import {
 import { drawAngles, findClickedAngle } from "../Functions/Angles";
 import { data } from "dcmjs";
 import { Box } from "@mui/material";
+import cornerstone from "cornerstone-core";
+import { CornerstoneViewport } from "react-cornerstone-viewport";
+import cornerstoneDICOMImageLoader from "@cornerstonejs/dicom-image-loader";
+import dicomParser from "dicom-parser";
 
 function Main() {
   const canvasRef = useRef(null);
@@ -24,24 +28,39 @@ function Main() {
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
+    console.log(file);
     if (file) {
       try {
         const arrayBuffer = await file.arrayBuffer();
         const newDicomDict = data.DicomMessage.readFile(arrayBuffer);
         setPatientName(newDicomDict.dict["00100010"]?.Value[0]?.Alphabetic);
-        console.log(newDicomDict.dict["7FE00010"]?.Value[0]);
         const pixelData = newDicomDict.dict["7FE00010"]?.Value[0];
         if (pixelData) {
-          const image = new Image();
-          image.src = arrayBufferToBase64(pixelData);
-          image.onload = () => {
-            const canvas = canvasRef.current;
-            const context = canvas.getContext("2d");
-            context.drawImage(image, 0, 0);
+          cornerstone.enable(canvasRef.current);
+          cornerstoneDICOMImageLoader.external.cornerstone = cornerstone;
+          cornerstoneDICOMImageLoader.external.dicomParser = dicomParser
+          var config = {
+            maxWebWorkers: navigator.hardwareConcurrency || 1,
+            startWebWorkersOnDemand: true,
           };
+          cornerstoneDICOMImageLoader.webWorkerManager.initialize(config);
+          // const imageId = cornerstoneDICOMImageLoader.wadouri.dataSetToDataURL(pixelData)
+          const imageId = `dicomweb:${URL.createObjectURL(file)}`
+          console.log("imageid = ",imageId);
+
+          // cornerstone.loadImage(imageId).then((image) => {
+          //   cornerstone.displayImage(canvasRef.current, image);
+          // });
+          // const image = new Image();
+          // image.src = arrayBufferToBase64(pixelData);
+          // image.onload = () => {
+          //   const canvas = canvasRef.current;
+          //   const context = canvas.getContext("2d");
+          //   context.drawImage(image, 0, 0);
+          // };
         }
       } catch (err) {
-        alert("error parsing dicom");
+        console.log("error parsing dicom");
         console.log(err);
       }
     }
@@ -53,6 +72,9 @@ function Main() {
   };
 
   useEffect(() => {
+    return () => {
+      cornerstone.disable(canvasRef.current);
+    };
     // axios.get(`${serverURL}/getData`).then((response) => {
     //   const { patientName, pixelData, height, width } = response.data;
     //   setHeight(height);
