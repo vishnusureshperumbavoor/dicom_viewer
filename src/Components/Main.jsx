@@ -8,6 +8,7 @@ import {
 } from "../Functions/Lines";
 import { drawAngles, findClickedAngle } from "../Functions/Angles";
 import { data } from "dcmjs";
+import { Box } from "@mui/material";
 
 function Main() {
   const canvasRef = useRef(null);
@@ -19,47 +20,39 @@ function Main() {
   const [angleCoordinates, setAngleCoordinates] = useState([]);
   const [selectedShape, setSelectedShape] = useState("Line");
 
-  const [dicomDict,setDicomDict] = useState(null)
+  const [dicomDict, setDicomDict] = useState(null);
 
-  const handleFileChange = async(e)=>{
-    const file = e.target.files[0]
-    if(file){
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
       try {
         const arrayBuffer = await file.arrayBuffer();
         const newDicomDict = data.DicomMessage.readFile(arrayBuffer);
-        console.log(newDicomDict.dict["00100010"]?.Value[0]?.Alphabetic);
-        const patientName = newDicomDict.dict["00100010"]?.Value[0];
-        alert("patientname = ", patientName);
+        setPatientName(newDicomDict.dict["00100010"]?.Value[0]?.Alphabetic);
+        console.log(newDicomDict.dict["7FE00010"]?.Value[0]);
+        const pixelData = newDicomDict.dict["7FE00010"]?.Value[0];
+        if (pixelData) {
+          const image = new Image();
+          image.src = arrayBufferToBase64(pixelData);
+          image.onload = () => {
+            const canvas = canvasRef.current;
+            const context = canvas.getContext("2d");
+            context.drawImage(image, 0, 0);
+          };
+        }
       } catch (err) {
-        alert("error parsing dicom")
+        alert("error parsing dicom");
         console.log(err);
       }
     }
-  }
+  };
+
+  const arrayBufferToBase64 = (buffer) => {
+    const binary = new Uint8Array(buffer);
+    return "data:image/png;base64," + btoa(String.fromCharCode(...binary));
+  };
 
   useEffect(() => {
-
-    // const loadDicomFiles = async () => {
-    //   try {
-    //     console.log(data.DicomMessage);
-    //     const response = await fetch("/src/DicomFiles/0002.DCM");
-    //     const dicomBuffer = response.arrayBuffer;
-    //     const dicomData = data.DicomMessage.readFile(new Uint8Array(dicomBuffer))
-    //     console.log(dicomData);
-
-    //     // parse the dicom buffer
-    //     // const dicomMessage = data.DicomMessage(new Uint8Array(dicomBuffer));
-
-    //     // access attributes
-    //     // const patientName = dicomMessage.getString(0x00100010);
-    //     // alert(patientName);
-    //   } catch (err) {
-    //     alert("error parsing the dicom file");
-    //     console.log(err);
-    //   }
-    // };
-    // loadDicomFiles();
-
     // axios.get(`${serverURL}/getData`).then((response) => {
     //   const { patientName, pixelData, height, width } = response.data;
     //   setHeight(height);
@@ -78,7 +71,6 @@ function Main() {
     //     imgData.data[j++] = 255;
     //   }
     //   ctx.putImageData(imgData, 0, 0);
-
     //   linePoints.forEach((point) => drawPoints(ctx, point.x, point.y));
     //   if (linePoints.length >= 2) {
     //     for (let i = 0; i < linePoints.length - 1; i = i + 2) {
@@ -87,9 +79,7 @@ function Main() {
     //       drawLines(ctx, startPoint, endPoint);
     //     }
     //   }
-
     //   console.log(angleCoordinates);
-
     //   anglePoints.forEach((point) => drawPoints(ctx, point.x, point.y));
     //   if (angleCoordinates.length >= 1) {
     //     for (let i = 0; i < angleCoordinates.length; i = i + 1) {
@@ -159,25 +149,22 @@ function Main() {
 
   return (
     <div>
-      <input type="file" onChange={handleFileChange} />
-      {dicomDict && (
-        <div>
-          <h2>patient name : {dicomDict.dict["00100010"]?.Value[0]}</h2>
-          <pre>dicom dictionary : {JSON.stringify(dicomDict, null, 2)}</pre>
-        </div>
-      )}
-      <h1>Patient Name : {patientName}</h1>
-      <PrimaryShapeButton
-        handleShapeSelection={handleShapeSelection}
-        selectedShape={selectedShape}
-      />
-      <canvas
-        ref={canvasRef}
-        onClick={handleCanvasClick}
-        width={width}
-        height={height}
-        style={{ border: "1px solid #000000" }}
-      />
+      <Box sx={{ mt: 4 }}>
+        <input type="file" onChange={handleFileChange} />
+        <h1>Patient Name : {patientName}</h1>
+        <canvas ref={canvasRef} width={500} height={500}></canvas>
+        {/* <PrimaryShapeButton
+          handleShapeSelection={handleShapeSelection}
+          selectedShape={selectedShape}
+        />
+        <canvas
+          ref={canvasRef}
+          onClick={handleCanvasClick}
+          width={width}
+          height={height}
+          style={{ border: "1px solid #000000" }}
+        /> */}
+      </Box>
     </div>
   );
 }
