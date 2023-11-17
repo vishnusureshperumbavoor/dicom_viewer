@@ -26,13 +26,13 @@ class Angles {
   };
 
   findClickedAngle = (mousePos, clickedPoints) => {
-    // const tolearnce = 5;
-    // for (const line of clickedPoints.slice(0, -1)) {
-    //   const start = line;
-    //   if (pointOnLine(mousePos, start, tolearnce)) {
-    //     return { start, end };
-    //   }
-    // }
+    const tolerance = 5;
+    for (const line of clickedPoints.slice(0, -1)) {
+      const start = line;
+      if (pointOnLine(mousePos, start, tolerance)) {
+        return { start };
+      }
+    }
   };
 
   handleAngleClick = (
@@ -81,7 +81,6 @@ const pointOnLine = (point, line, tolerance) => {
       Math.pow(line.end.y - line.start.y, 2) +
         Math.pow(line.end.x - line.start.x, 2)
     );
-
   return distance < tolerance;
 };
 

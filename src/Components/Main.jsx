@@ -3,6 +3,7 @@ import PrimaryShapeButton from "./PrimaryShapeButton";
 import Points from "../Functions/Points";
 import Lines from "../Functions/Lines";
 import Angles from "../Functions/Angles";
+import Circles from "../Functions/Circles";
 import { data, log } from "dcmjs";
 
 function Main() {
@@ -11,6 +12,7 @@ function Main() {
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
   const [linePoints, setLinePoints] = useState([]);
+  const [circlePoints, setCirclePoints] = useState([]);
   const [anglePoints, setAnglePoints] = useState([]);
   const [angleCoordinates, setAngleCoordinates] = useState([]);
   const [selectedShape, setSelectedShape] = useState("Line");
@@ -19,12 +21,17 @@ function Main() {
 
   const linesInstance = new Lines();
   const pointsInstance = new Points();
-  const anglesInstance = new Angles()
+  const anglesInstance = new Angles();
+  const circlesInstance = new Circles();
 
   useEffect(() => {
+    console.log(angleCoordinates);
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    linePoints.forEach((point) => pointsInstance.drawPoints(ctx, point.x, point.y));
+
+    linePoints.forEach((point) =>
+      pointsInstance.drawPoints(ctx, point.x, point.y)
+    );
     if (linePoints.length >= 2) {
       for (let i = 0; i < linePoints.length - 1; i = i + 2) {
         const startPoint = linePoints[i];
@@ -33,7 +40,9 @@ function Main() {
       }
     }
 
-    anglePoints.forEach((point) => pointsInstance.drawPoints(ctx, point.x, point.y));
+    anglePoints.forEach((point) =>
+      pointsInstance.drawPoints(ctx, point.x, point.y)
+    );
     if (angleCoordinates.length >= 1) {
       for (let i = 0; i < angleCoordinates.length; i = i + 1) {
         const currentAngle = angleCoordinates[i];
@@ -46,37 +55,49 @@ function Main() {
         }
       }
     }
-  }, [linePoints, anglePoints]);
+
+    circlePoints.forEach((point, index) => {
+      if (index % 2 === 0) {
+        pointsInstance.drawPoints(ctx, point.x, point.y);
+      }
+    });
+    if (circlePoints.length >= 2) {
+      for (let i = 0; i < circlePoints.length - 1; i = i + 2) {
+        const startPoint = circlePoints[i];
+        const endPoint = circlePoints[i + 1];
+        circlesInstance.drawCircle(ctx, startPoint, endPoint);
+      }
+    }
+  }, [linePoints, anglePoints, circlePoints]);
 
   const handleCanvasClick = (event) => {
-    
     const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     switch (selectedShape) {
       case "Line":
         const clickedLine = linesInstance.findClickedLine({ x, y }, linePoints);
-        console.log(clickedLine);
         if (clickedLine) {
           if (window.confirm("Do you want to delete the line?")) {
             const updatedLinePoints = linePoints.filter(
               (points) =>
                 points !== clickedLine.start && points !== clickedLine.end
             );
-            console.log(updatedLinePoints);
-            setLinePoints([...updatedLinePoints]);
+            setLinePoints(updatedLinePoints);
           }
         } else {
           setLinePoints([...linePoints, { x, y }]);
-          console.log(linePoints);
         }
         break;
       case "Angle":
-        const clickedAngle = anglesInstance.findClickedAngle({ x, y }, angleCoordinates);
-        console.log(clickedAngle);
+        const clickedAngle = anglesInstance.findClickedAngle(
+          { x, y },
+          angleCoordinates
+        );
+
         if (clickedAngle) {
-          console.log("clicked on angle");
           // if (window.confirm("Do you want to delete the angle?")) {
           //   const updatedAngles = angleCoordinates.filter((angle) => {
           //     return angle.id !== clickedAngle.id;
@@ -85,12 +106,27 @@ function Main() {
           // }
         } else {
           setAnglePoints((points) => [...points, { x, y }]);
-          // handleAngleClick(
-          //   { x, y },
-          //   angleCoordinates,
-          //   setAngleCoordinates,
-          //   anglePoints
-          // );
+          anglesInstance.handleAngleClick(
+            { x, y },
+            angleCoordinates,
+            setAngleCoordinates,
+            anglePoints
+          );
+        }
+        break;
+
+      case "Circle":
+        const clickedCircle = circlesInstance.findClickedCircle({ x, y }, circlePoints);
+        if (clickedCircle) {
+          if (window.confirm("Do you want to delete the circle?")) {
+            const updatedCirclePoints = circlePoints.filter(
+              (points) =>
+                points !== clickedCircle.start && points !== clickedCircle.end
+            );
+            setCirclePoints(updatedCirclePoints);
+          }
+        } else {
+          setCirclePoints([...circlePoints, { x, y }]);
         }
         break;
       default:
