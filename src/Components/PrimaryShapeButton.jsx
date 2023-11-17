@@ -1,3 +1,4 @@
+import { Button } from "@mui/material";
 import React, { useState } from "react";
 
 function PrimaryShapeButton({ handleShapeSelection, selectedShape }) {
@@ -5,7 +6,7 @@ function PrimaryShapeButton({ handleShapeSelection, selectedShape }) {
   return (
     <div>
         {shapeButtons.map((label) => (
-          <button
+          <Button
             key={label}
             variant="contained"
             sx={{
@@ -16,7 +17,7 @@ function PrimaryShapeButton({ handleShapeSelection, selectedShape }) {
             onClick={() => handleShapeSelection(label)}
           >
             {label}
-          </button>
+          </Button>
         ))}
     </div>
   );
