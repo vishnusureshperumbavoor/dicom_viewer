@@ -8,11 +8,6 @@ import {
 } from "../Functions/Lines";
 import { drawAngles, findClickedAngle } from "../Functions/Angles";
 import { data } from "dcmjs";
-import { Box } from "@mui/material";
-import cornerstone from "cornerstone-core";
-import { CornerstoneViewport } from "react-cornerstone-viewport";
-import cornerstoneDICOMImageLoader from "@cornerstonejs/dicom-image-loader";
-import dicomParser from "dicom-parser";
 
 function Main() {
   const canvasRef = useRef(null);
@@ -28,7 +23,6 @@ function Main() {
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
-    console.log(file);
     if (file) {
       try {
         const arrayBuffer = await file.arrayBuffer();
@@ -36,28 +30,13 @@ function Main() {
         setPatientName(newDicomDict.dict["00100010"]?.Value[0]?.Alphabetic);
         const pixelData = newDicomDict.dict["7FE00010"]?.Value[0];
         if (pixelData) {
-          cornerstone.enable(canvasRef.current);
-          cornerstoneDICOMImageLoader.external.cornerstone = cornerstone;
-          cornerstoneDICOMImageLoader.external.dicomParser = dicomParser
-          var config = {
-            maxWebWorkers: navigator.hardwareConcurrency || 1,
-            startWebWorkersOnDemand: true,
+          const image = new Image();
+          image.src = arrayBufferToBase64(pixelData);
+          image.onload = () => {
+            const canvas = canvasRef.current;
+            const context = canvas.getContext("2d");
+            context.drawImage(image, 0, 0);
           };
-          cornerstoneDICOMImageLoader.webWorkerManager.initialize(config);
-          // const imageId = cornerstoneDICOMImageLoader.wadouri.dataSetToDataURL(pixelData)
-          const imageId = `dicomweb:${URL.createObjectURL(file)}`
-          console.log("imageid = ",imageId);
-
-          // cornerstone.loadImage(imageId).then((image) => {
-          //   cornerstone.displayImage(canvasRef.current, image);
-          // });
-          // const image = new Image();
-          // image.src = arrayBufferToBase64(pixelData);
-          // image.onload = () => {
-          //   const canvas = canvasRef.current;
-          //   const context = canvas.getContext("2d");
-          //   context.drawImage(image, 0, 0);
-          // };
         }
       } catch (err) {
         console.log("error parsing dicom");
@@ -72,9 +51,6 @@ function Main() {
   };
 
   useEffect(() => {
-    return () => {
-      cornerstone.disable(canvasRef.current);
-    };
     // axios.get(`${serverURL}/getData`).then((response) => {
     //   const { patientName, pixelData, height, width } = response.data;
     //   setHeight(height);
@@ -171,7 +147,6 @@ function Main() {
 
   return (
     <div>
-      <Box sx={{ mt: 4 }}>
         <input type="file" onChange={handleFileChange} />
         <h1>Patient Name : {patientName}</h1>
         <canvas ref={canvasRef} width={500} height={500}></canvas>
@@ -186,7 +161,6 @@ function Main() {
           height={height}
           style={{ border: "1px solid #000000" }}
         /> */}
-      </Box>
     </div>
   );
 }

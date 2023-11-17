@@ -1,21 +1,11 @@
 import React, { useState } from "react";
-import Button from "@mui/material/Button";
-import { Box } from "@mui/material";
 
 function PrimaryShapeButton({ handleShapeSelection, selectedShape }) {
   const shapeButtons = ["Line", "Angle", "Circle", "Rectangle"];
   return (
     <div>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "center",
-          mb: 3,
-        }}
-      >
         {shapeButtons.map((label) => (
-          <Button
+          <button
             key={label}
             variant="contained"
             sx={{
@@ -26,9 +16,8 @@ function PrimaryShapeButton({ handleShapeSelection, selectedShape }) {
             onClick={() => handleShapeSelection(label)}
           >
             {label}
-          </Button>
+          </button>
         ))}
-      </Box>
     </div>
   );
 }
