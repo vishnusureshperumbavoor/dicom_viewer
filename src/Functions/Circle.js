@@ -4,7 +4,7 @@ const textColor = "white";
 const textStrokeColor = "black";
 const statsColor = "red"
 
-class Circles {
+class Circle {
   drawCircle = (ctx, start, end, pixelValues) => {
     // calculate radius
     const radius = Math.sqrt(
@@ -122,4 +122,4 @@ const pointOnCircle = (point, line, tolerance) => {
   return distance < tolerance;
 };
 
-export default Circles;
+export default Circle;

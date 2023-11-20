@@ -3,7 +3,7 @@ const textColor = "white";
 const textStrokeColor = "black";
 const normalColor = "green";
 
-class Lines {
+class Line {
   drawLines = (ctx, start, end) => {
     // line between points
     ctx.beginPath();
@@ -96,4 +96,4 @@ const pointOnLine = (point, line, tolerance) => {
   return distance < tolerance;
 };
 
-export default Lines;
+export default Line;

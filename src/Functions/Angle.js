@@ -2,7 +2,7 @@ const lineColor = "blue";
 const angleTextColor = "white";
 const font = "bold 15px Arial";
 
-class Angles {
+class Angle {
   drawAngles = (ctx, start, end1, end2) => {
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
@@ -92,4 +92,4 @@ const calculateAngle = (pointA, pointB, pointC) => {
   return angleDegrees < 0 ? angleDegrees + 360 : angleDegrees;
 };
 
-export default Angles
+export default Angle

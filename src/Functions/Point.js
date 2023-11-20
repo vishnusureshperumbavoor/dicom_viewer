@@ -1,4 +1,4 @@
-class Points {
+class Point {
   drawPoints = (ctx, x, y) => {
     const dotColor = "red";
     ctx.fillStyle = dotColor;
@@ -8,4 +8,4 @@ class Points {
   };
 }
 
-export default Points;
+export default Point;
