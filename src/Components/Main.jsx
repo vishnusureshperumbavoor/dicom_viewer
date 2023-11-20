@@ -4,20 +4,18 @@ import Points from "../Functions/Points";
 import Lines from "../Functions/Lines";
 import Angles from "../Functions/Angles";
 import Circles from "../Functions/Circles";
-import { data, log } from "dcmjs";
+import { data } from "dcmjs";
 
 function Main() {
   const canvasRef = useRef(null);
   const [patientName, setPatientName] = useState("");
-  const [height, setHeight] = useState(0);
-  const [width, setWidth] = useState(0);
+
   const [linePoints, setLinePoints] = useState([]);
   const [circlePoints, setCirclePoints] = useState([]);
   const [anglePoints, setAnglePoints] = useState([]);
   const [angleCoordinates, setAngleCoordinates] = useState([]);
-  const [selectedShape, setSelectedShape] = useState("Line");
 
-  const [dicomDict, setDicomDict] = useState(null);
+  const [selectedShape, setSelectedShape] = useState("Line");
 
   const linesInstance = new Lines();
   const pointsInstance = new Points();
@@ -25,13 +23,13 @@ function Main() {
   const circlesInstance = new Circles();
 
   useEffect(() => {
-    console.log(angleCoordinates);
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
     linePoints.forEach((point) =>
       pointsInstance.drawPoints(ctx, point.x, point.y)
     );
+
     if (linePoints.length >= 2) {
       for (let i = 0; i < linePoints.length - 1; i = i + 2) {
         const startPoint = linePoints[i];
@@ -39,6 +37,8 @@ function Main() {
         linesInstance.drawLines(ctx, startPoint, endPoint);
       }
     }
+
+    console.log(linePoints);
 
     anglePoints.forEach((point) =>
       pointsInstance.drawPoints(ctx, point.x, point.y)
@@ -66,13 +66,13 @@ function Main() {
         const startPoint = circlePoints[i];
         const endPoint = circlePoints[i + 1];
         circlesInstance.drawCircle(ctx, startPoint, endPoint);
+        circlesInstance.drawLines(ctx, startPoint, endPoint);
       }
     }
-  }, [linePoints, anglePoints, circlePoints]);
+  }, [linePoints, anglePoints, circlePoints, angleCoordinates]);
 
   const handleCanvasClick = (event) => {
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
@@ -91,6 +91,7 @@ function Main() {
           setLinePoints([...linePoints, { x, y }]);
         }
         break;
+
       case "Angle":
         const clickedAngle = anglesInstance.findClickedAngle(
           { x, y },
@@ -116,7 +117,10 @@ function Main() {
         break;
 
       case "Circle":
-        const clickedCircle = circlesInstance.findClickedCircle({ x, y }, circlePoints);
+        const clickedCircle = circlesInstance.findClickedCircle(
+          { x, y },
+          circlePoints
+        );
         if (clickedCircle) {
           if (window.confirm("Do you want to delete the circle?")) {
             const updatedCirclePoints = circlePoints.filter(
@@ -129,6 +133,7 @@ function Main() {
           setCirclePoints([...circlePoints, { x, y }]);
         }
         break;
+
       default:
         break;
     }
@@ -142,6 +147,8 @@ function Main() {
         const newDicomDict = data.DicomMessage.readFile(arrayBuffer);
         setPatientName(newDicomDict.dict["00100010"]?.Value[0]?.Alphabetic);
         const pixelData = newDicomDict.dict["7FE00010"]?.Value[0];
+        console.log(newDicomDict.dict);
+        console.log(newDicomDict.dict["00280030"]);
         if (pixelData) {
           const image = new Image();
           image.src = arrayBufferToBase64(pixelData);

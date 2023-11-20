@@ -1,4 +1,7 @@
-const circleColor = "yellow"
+const circleColor = "yellow";
+const lineColor = "blue";
+const textColor = "white";
+const textStrokeColor = "black";
 
 class Circles {
   drawCircle = (ctx, start, end) => {
@@ -26,6 +29,42 @@ class Circles {
       }
     }
   };
+
+  drawLines = (ctx, start, end) => {
+    // line between points
+    const originalLineDash = ctx.getLineDash();
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.strokeStyle = lineColor;
+    ctx.stroke();
+
+    ctx.setLineDash(originalLineDash);
+
+    // display the distance on the line
+    const distance = calculateDistance(start, end);
+    const midPoint = {
+      x: (start.x + end.x) / 2,
+      y: (start.y + end.y) / 2,
+    };
+    ctx.fillStyle = textColor;
+    ctx.strokeStyle = textStrokeColor;
+    ctx.lineWidth = 2;
+    ctx.font = "14px Arial";
+
+    const text = `${distance.toFixed(2)}mm`;
+    const textWidth = ctx.measureText(text).width;
+    const textX = midPoint.x - textWidth / 2;
+    const textY = midPoint.y;
+
+    ctx.fillText(text, textX, textY);
+    // ctx.strokeText(text, textX, textY);
+  };
+
+  calculateArea = (radius) => {
+    return Math.PI * Math.pow(radius, 2);
+  };
 }
 
 const pointOnCircle = (point, line, tolerance) => {
@@ -42,6 +81,16 @@ const pointOnCircle = (point, line, tolerance) => {
     );
 
   return distance < tolerance;
+};
+
+const calculateDistance = (point1, point2) => {
+  const dx = point2.x - point1.x;
+  const dy = point2.y - point1.y;
+  return Math.sqrt(dx * dx + dy * dy);
+};
+
+const calculateSlope = (point1, point2) => {
+  return (point2.y - point1.y) / (point2.x - point1.x);
 };
 
 export default Circles;
