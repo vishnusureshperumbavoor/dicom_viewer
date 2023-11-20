@@ -3,7 +3,7 @@ class Points {
     const dotColor = "red";
     ctx.fillStyle = dotColor;
     ctx.beginPath();
-    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.arc(x, y, 2, 0, 2 * Math.PI);
     ctx.fill();
   };
 }

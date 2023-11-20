@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import PrimaryShapeButton from "./PrimaryShapeButton";
-import Points from "../Functions/Points";
-import Lines from "../Functions/Lines";
-import Angles from "../Functions/Angles";
-import Circles from "../Functions/Circles";
+import Points from "../Functions/Point";
+import Lines from "../Functions/Line";
+import Angles from "../Functions/Angle";
+import Circles from "../Functions/Circle";
+import Rectangles from "../Functions/Rectangle";
 import { data } from "dcmjs";
 
 function Main() {
@@ -12,6 +13,7 @@ function Main() {
 
   const [linePoints, setLinePoints] = useState([]);
   const [circlePoints, setCirclePoints] = useState([]);
+  const [rectanglePoints, setRectanglePoints] = useState([]);
   const [anglePoints, setAnglePoints] = useState([]);
   const [angleCoordinates, setAngleCoordinates] = useState([]);
   const [pixelValues, setPixelValues] = useState([]);
@@ -22,6 +24,7 @@ function Main() {
   const pointsInstance = new Points();
   const anglesInstance = new Angles();
   const circlesInstance = new Circles();
+  const rectangleInstance = new Rectangles();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -68,11 +71,28 @@ function Main() {
         const endPoint = circlePoints[i + 1];
         circlesInstance.drawCircle(ctx, startPoint, endPoint, pixelValues);
         circlesInstance.drawLines(ctx, startPoint, endPoint);
-        const radius = circlesInstance.calculateDistance(startPoint, endPoint);
-        const area = circlesInstance.calculateArea(radius);
       }
     }
-  }, [linePoints, anglePoints, circlePoints, angleCoordinates]);
+
+    rectanglePoints.forEach((point) =>
+      pointsInstance.drawPoints(ctx, point.x, point.y)
+    );
+
+    if (rectanglePoints.length >= 2) {
+      for (let i = 0; i < rectanglePoints.length - 1; i = i + 2) {
+        const startPoint = rectanglePoints[i];
+        const endPoint = rectanglePoints[i + 1];
+        rectangleInstance.drawRectangle(ctx, startPoint, endPoint);
+      }
+    }
+
+  }, [
+    linePoints,
+    anglePoints,
+    circlePoints,
+    angleCoordinates,
+    rectanglePoints,
+  ]);
 
   const handleCanvasClick = (event) => {
     const canvas = canvasRef.current;
@@ -84,11 +104,12 @@ function Main() {
         const clickedLine = linesInstance.findClickedLine({ x, y }, linePoints);
         if (clickedLine) {
           if (window.confirm("Do you want to delete the line?")) {
-            const updatedLinePoints = linePoints.filter(
-              (points) =>
-                points !== clickedLine.start && points !== clickedLine.end
-            );
-            setLinePoints(updatedLinePoints);
+            // const updatedLinePoints = linePoints.filter(
+            //   (points) =>
+            //     points !== clickedLine.start && points !== clickedLine.end
+            // );
+            // setLinePoints(updatedLinePoints);
+            setLinePoints([]);
           }
         } else {
           setLinePoints([...linePoints, { x, y }]);
@@ -102,12 +123,12 @@ function Main() {
         );
 
         if (clickedAngle) {
-          // if (window.confirm("Do you want to delete the angle?")) {
-          //   const updatedAngles = angleCoordinates.filter((angle) => {
-          //     return angle.id !== clickedAngle.id;
-          //   });
-          //   setAngleCoordinates(updatedAngles);
-          // }
+          if (window.confirm("Do you want to delete the angle?")) {
+            const updatedAngles = angleCoordinates.filter((angle) => {
+              return angle.id !== clickedAngle.id;
+            });
+            setAngleCoordinates(updatedAngles);
+          }
         } else {
           setAnglePoints((points) => [...points, { x, y }]);
           anglesInstance.handleAngleClick(
@@ -137,6 +158,9 @@ function Main() {
         }
         break;
 
+      case "Rectangle":
+        setRectanglePoints([...rectanglePoints, { x, y }]);
+        break;
       default:
         break;
     }
@@ -151,6 +175,8 @@ function Main() {
         setPatientName(newDicomDict.dict["00100010"]?.Value[0]?.Alphabetic);
         const pixelData = newDicomDict.dict["7FE00010"]?.Value[0];
         setPixelValues(pixelData);
+        console.log("pixel spacing = ");
+        console.log(newDicomDict.dict["00280010"].Value);
         if (pixelData) {
           const image = new Image();
           image.src = arrayBufferToBase64(pixelData);

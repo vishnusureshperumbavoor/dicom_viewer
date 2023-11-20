@@ -99,10 +99,6 @@ class Circles {
     // ctx.strokeText(text, textX, textY);
   };
 
-  calculateArea = (radius) => {
-    return Math.PI * Math.pow(radius, 2);
-  };
-
   calculateDistance = (point1, point2) => {
     const dx = point2.x - point1.x;
     const dy = point2.y - point1.y;
