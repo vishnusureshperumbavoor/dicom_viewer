@@ -14,6 +14,7 @@ function Main() {
   const [circlePoints, setCirclePoints] = useState([]);
   const [anglePoints, setAnglePoints] = useState([]);
   const [angleCoordinates, setAngleCoordinates] = useState([]);
+  const [pixelValues, setPixelValues] = useState([]);
 
   const [selectedShape, setSelectedShape] = useState("Line");
 
@@ -65,8 +66,10 @@ function Main() {
       for (let i = 0; i < circlePoints.length - 1; i = i + 2) {
         const startPoint = circlePoints[i];
         const endPoint = circlePoints[i + 1];
-        circlesInstance.drawCircle(ctx, startPoint, endPoint);
+        circlesInstance.drawCircle(ctx, startPoint, endPoint, pixelValues);
         circlesInstance.drawLines(ctx, startPoint, endPoint);
+        const radius = circlesInstance.calculateDistance(startPoint, endPoint);
+        const area = circlesInstance.calculateArea(radius);
       }
     }
   }, [linePoints, anglePoints, circlePoints, angleCoordinates]);
@@ -147,8 +150,7 @@ function Main() {
         const newDicomDict = data.DicomMessage.readFile(arrayBuffer);
         setPatientName(newDicomDict.dict["00100010"]?.Value[0]?.Alphabetic);
         const pixelData = newDicomDict.dict["7FE00010"]?.Value[0];
-        console.log(newDicomDict.dict);
-        console.log(newDicomDict.dict["00280030"]);
+        setPixelValues(pixelData);
         if (pixelData) {
           const image = new Image();
           image.src = arrayBufferToBase64(pixelData);

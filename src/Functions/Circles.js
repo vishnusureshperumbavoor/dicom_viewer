@@ -2,9 +2,10 @@ const circleColor = "yellow";
 const lineColor = "blue";
 const textColor = "white";
 const textStrokeColor = "black";
+const statsColor = "red"
 
 class Circles {
-  drawCircle = (ctx, start, end) => {
+  drawCircle = (ctx, start, end, pixelValues) => {
     // calculate radius
     const radius = Math.sqrt(
       Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
@@ -18,6 +19,42 @@ class Circles {
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.closePath();
+
+    // display area
+    const area = Math.PI * Math.pow(radius, 2);
+
+    // calculate statistics
+    const uint8Array = new Uint8Array(pixelValues);
+    // calculating max
+    const max = Math.max(...Array.from(uint8Array));
+    // calculating mean
+    const mean =
+      Array.from(uint8Array).reduce((acc, val) => acc + val, 0) /
+      uint8Array.length;
+    // calculating standard deviation
+    const squaredDifferences = Array.from(uint8Array).map((val) =>
+      Math.pow(val - mean, 2)
+    );
+    const variance =
+      squaredDifferences.reduce((acc, val) => acc + val, 0) / uint8Array.length;
+    const stdDev = Math.sqrt(variance);
+
+    // display statistics
+    const statsText = [
+      `Area: ${area.toFixed(2)} mm²`,
+      `Mean: ${mean.toFixed(2)}`,
+      `Max: ${max.toFixed(2)}`,
+      `Std Dev: ${stdDev.toFixed(2)}`,
+    ];
+    const lineHeight = 16;
+    const statsTextWidth = ctx.measureText(statsText).width;
+    const statsTextX = start.x - statsTextWidth / 2 + 10;
+    const statsTextY = start.y + radius + 20;
+    ctx.fillStyle = statsColor;
+    ctx.font = "14px Arial";
+    statsText.forEach((line, index) => {
+      ctx.fillText(line, statsTextX, statsTextY + index * lineHeight);
+    });
   };
 
   findClickedCircle = (mousePos, clickedPoints) => {
@@ -43,7 +80,7 @@ class Circles {
     ctx.setLineDash(originalLineDash);
 
     // display the distance on the line
-    const distance = calculateDistance(start, end);
+    const distance = this.calculateDistance(start, end);
     const midPoint = {
       x: (start.x + end.x) / 2,
       y: (start.y + end.y) / 2,
@@ -65,6 +102,12 @@ class Circles {
   calculateArea = (radius) => {
     return Math.PI * Math.pow(radius, 2);
   };
+
+  calculateDistance = (point1, point2) => {
+    const dx = point2.x - point1.x;
+    const dy = point2.y - point1.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
 }
 
 const pointOnCircle = (point, line, tolerance) => {
@@ -81,16 +124,6 @@ const pointOnCircle = (point, line, tolerance) => {
     );
 
   return distance < tolerance;
-};
-
-const calculateDistance = (point1, point2) => {
-  const dx = point2.x - point1.x;
-  const dy = point2.y - point1.y;
-  return Math.sqrt(dx * dx + dy * dy);
-};
-
-const calculateSlope = (point1, point2) => {
-  return (point2.y - point1.y) / (point2.x - point1.x);
 };
 
 export default Circles;
