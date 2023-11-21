@@ -1,5 +1,5 @@
 import { Button } from "@mui/material";
-import React, { useState } from "react";
+import React from "react";
 
 function PrimaryShapeButton({ handleShapeSelection, selectedShape }) {
   const shapeButtons = ["Line", "Angle", "Circle", "Rectangle"];
@@ -12,6 +12,7 @@ function PrimaryShapeButton({ handleShapeSelection, selectedShape }) {
             sx={{
               mr: 2,
               ml: 2,
+              mb:2,
               border: selectedShape === label ? "5px solid green" : "none",
             }}
             onClick={() => handleShapeSelection(label)}

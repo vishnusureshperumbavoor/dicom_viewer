@@ -5,40 +5,36 @@ import Lines from "../Functions/Line";
 import Angles from "../Functions/Angle";
 import Circles from "../Functions/Circle";
 import Rectangles from "../Functions/Rectangle";
-import { data, log } from "dcmjs";
+import { data } from "dcmjs";
+
+const linesInstance = new Lines();
+const pointsInstance = new Points();
+const anglesInstance = new Angles();
+const circlesInstance = new Circles();
+const rectangleInstance = new Rectangles();
 
 function Main() {
   const canvasRef = useRef(null);
   const [patientName, setPatientName] = useState("");
-
   const [linePoints, setLinePoints] = useState([]);
   const [circlePoints, setCirclePoints] = useState([]);
   const [rectanglePoints, setRectanglePoints] = useState([]);
   const [anglePoints, setAnglePoints] = useState([]);
-  const [pixelValues, setPixelValues] = useState([]);
-
   const [selectedShape, setSelectedShape] = useState("Line");
-
-  const linesInstance = new Lines();
-  const pointsInstance = new Points();
-  const anglesInstance = new Angles();
-  const circlesInstance = new Circles();
-  const rectangleInstance = new Rectangles();
+  const [rotationAngle, setRotationAngle] = useState(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
     linePoints.forEach((point) => {
-      pointsInstance.drawPoints(ctx, point.x, point.y);
+      linesInstance.drawLinePoints(ctx, point.x, point.y);
     });
 
-    if (linePoints.length >= 2) {
-      for (let i = 0; i < linePoints.length - 1; i = i + 2) {
-        const startPoint = linePoints[i];
-        const endPoint = linePoints[i + 1];
-        linesInstance.drawLines(ctx, startPoint, endPoint);
-      }
+    for (let i = 0; i < linePoints.length - 1; i = i + 2) {
+      const startPoint = linePoints[i];
+      const endPoint = linePoints[i + 1];
+      linesInstance.drawLines(ctx, startPoint, endPoint);
     }
 
     anglePoints.forEach((point) =>
@@ -58,18 +54,18 @@ function Main() {
         pointsInstance.drawPoints(ctx, point.x, point.y);
       }
     });
-    if (circlePoints.length >= 2) {
+
+    if (circlePoints.length % 2 === 0) {
       for (let i = 0; i < circlePoints.length - 1; i = i + 2) {
         const startPoint = circlePoints[i];
         const endPoint = circlePoints[i + 1];
-        circlesInstance.drawCircle(ctx, startPoint, endPoint, pixelValues);
-        circlesInstance.drawLines(ctx, startPoint, endPoint);
+        circlesInstance.drawCircle(ctx, startPoint, endPoint);
       }
     }
 
-    rectanglePoints.forEach((point) =>
-      pointsInstance.drawPoints(ctx, point.x, point.y)
-    );
+    rectanglePoints.forEach((point) => {
+      pointsInstance.drawPoints(ctx, point.x, point.y);
+    });
 
     if (rectanglePoints.length >= 2) {
       for (let i = 0; i < rectanglePoints.length - 1; i = i + 2) {
@@ -81,23 +77,20 @@ function Main() {
   }, [linePoints, anglePoints, circlePoints, rectanglePoints]);
 
   const handleFileChange = async (e) => {
-    const file = e.target.files[0];
     const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
+    const file = e.target.files[0];
     if (file) {
       try {
         const arrayBuffer = await file.arrayBuffer();
         const newDicomDict = data.DicomMessage.readFile(arrayBuffer);
         setPatientName(newDicomDict.dict["00100010"]?.Value[0]?.Alphabetic);
         const pixelData = newDicomDict.dict["7FE00010"]?.Value[0];
-        setPixelValues(pixelData);
-        console.log("pixel spacing = ");
-        console.log(newDicomDict.dict["00280010"].Value);
         if (pixelData) {
           const image = new Image();
           image.src = arrayBufferToBase64(pixelData);
           image.onload = () => {
-            context.drawImage(image, 0, 0);
+            ctx.drawImage(image, 0, 0);
           };
         }
       } catch (err) {
@@ -109,6 +102,7 @@ function Main() {
 
   const handleCanvasClick = (event) => {
     const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
@@ -122,7 +116,6 @@ function Main() {
                 points !== clickedLine.start && points !== clickedLine.end
             );
             setLinePoints(updatedLinePoints);
-            // setLinePoints([]);
           }
         } else {
           setLinePoints([...linePoints, { x, y }]);
@@ -169,24 +162,17 @@ function Main() {
           rectanglePoints
         );
         if (clickedRectangle) {
-          // toggle between 0,45,90,135,180,...
-          const newRotation = (clickedRectangle.rotation + 45) % 360;
-          const rotatedRectangle = rectangleInstance.rotateRectangle(
+          const angle = calculateRotationAngle(clickedRectangle.startPoint, {
+            x,
+            y,
+          });
+          setRotationAngle(angle);
+          rectangleInstance.rotateRectangle(
+            ctx,
             clickedRectangle.startPoint,
             clickedRectangle.endPoint,
-            newRotation
+            rotationAngle
           );
-          const updatedRectangles = rectanglePoints.map((point) => {
-            if (point === clickedRectangle.startPoint) {
-              return { ...rotatedRectangle[0], rotation: newRotation };
-            } else if (point === clickedRectangle.endPoint) {
-              return {
-                ...rotatedRectangle[1],
-                rotation: newRotation,
-              };
-            }
-          });
-          setRectanglePoints(updatedRectangles);
         } else {
           setRectanglePoints([...rectanglePoints, { x, y }]);
         }
@@ -203,6 +189,19 @@ function Main() {
 
   const handleShapeSelection = (shape) => {
     setSelectedShape(shape);
+  };
+
+  const snapTo45DegreeInterval = (angle) => {
+    const snappedAngle = Math.round(angle / 45) * 45;
+    return snappedAngle;
+  };
+
+  const calculateRotationAngle = (start, currentMousePos) => {
+    const deltaX = currentMousePos.x - start.x;
+    const deltaY = currentMousePos.y - start.y;
+    const angleInRadians = Math.atan2(deltaY, deltaX);
+    const angleInDegrees = (angleInRadians * 180) / Math.PI;
+    return angleInDegrees;
   };
 
   return (

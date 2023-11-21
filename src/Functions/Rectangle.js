@@ -94,14 +94,16 @@ class Rectangle {
     return { x, y };
   };
 
-  rotateRectangle = (start, end, angle) => {
-    const center = {
-      x: (start.x + end.x) / 2,
-      y: (start.y + end.y) / 2,
-    };
-    const rotatedStart = this.rotatePoint(start, center, angle);
-    const rotatedEnd = this.rotatePoint(end, center, angle);
-    return [rotatedStart,rotatedEnd]
+  drawRotatedAngle = (ctx, startPoint, endPoint, angle) => {
+    const centerX = (startPoint.x + endPoint.x) / 2;
+    const centerY = (startPoint.y + endPoint.y) / 2;
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate((angle * Math.PI) / 180);
+    const width = Math.abs(endPoint.x - startPoint.x);
+    const height = Math.abs(endPoint.y - startPoint.y);
+    ctx.fillRect(-width / 2, -height / 2, width, height);
+    ctx.restore();
   };
 }
 

@@ -4,6 +4,14 @@ const textStrokeColor = "black";
 const normalColor = "green";
 
 class Line {
+  drawLinePoints = (ctx, x, y) => {
+    const dotColor = "red";
+    ctx.fillStyle = dotColor;
+    ctx.beginPath();
+    ctx.arc(x, y, 2, 0, 2 * Math.PI);
+    ctx.fill();
+  };
+
   drawLines = (ctx, start, end) => {
     // line between points
     ctx.beginPath();
@@ -29,7 +37,6 @@ class Line {
     const textY = midPoint.y;
 
     ctx.fillText(text, textX, textY);
-    // ctx.strokeText(text, textX, textY);
 
     // normal line
     const normalSlope = -1 / calculateSlope(start, end);
@@ -59,14 +66,6 @@ class Line {
         return { start, end };
       }
     }
-  };
-
-  drawTemporaryLine = (ctx, start, end) => {
-    ctx.beginPath();
-    ctx.moveTo(start.x, start.y);
-    ctx.lineTo(end.x, end.y);
-    ctx.strokeStyle = lineColor;
-    ctx.stroke();
   };
 }
 

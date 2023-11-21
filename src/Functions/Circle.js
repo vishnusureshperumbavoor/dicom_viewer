@@ -1,18 +1,30 @@
 const circleColor = "yellow";
 const lineColor = "blue";
-const textColor = "white";
+const textColor = "orange";
 const textStrokeColor = "black";
-const statsColor = "red"
+const statsColor = "red";
 
 class Circle {
-  drawCircle = (ctx, start, end, pixelValues) => {
+  drawCircle = (ctx, start, end) => {
     // calculate radius
     const radius = Math.sqrt(
       Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
     );
 
+    // pixels within the circle
+    const imageData = ctx.getImageData(
+      start.x - radius,
+      start.y - radius,
+      radius * 2,
+      radius * 2
+    );
+    const pixelsWithinCircle = new Uint8Array(imageData.data.buffer);
+    const selectedPixelValues = [];
+    for (let i = 0; i < pixelsWithinCircle.length; i += 4) {
+      selectedPixelValues.push(pixelsWithinCircle[i]);
+    }
+
     // draw circle
-    // ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     ctx.arc(start.x, start.y, radius, 0, 2 * Math.PI);
     ctx.strokeStyle = circleColor;
@@ -20,11 +32,11 @@ class Circle {
     ctx.stroke();
     ctx.closePath();
 
-    // display area
+    // area
     const area = Math.PI * Math.pow(radius, 2);
 
     // calculate statistics
-    const uint8Array = new Uint8Array(pixelValues);
+    const uint8Array = new Uint8Array(selectedPixelValues);
     // calculating max
     const max = Math.max(...Array.from(uint8Array));
     // calculating mean
@@ -55,6 +67,8 @@ class Circle {
     statsText.forEach((line, index) => {
       ctx.fillText(line, statsTextX, statsTextY + index * lineHeight);
     });
+
+    this.drawLines(ctx, start, end);
   };
 
   findClickedCircle = (mousePos, clickedPoints) => {
