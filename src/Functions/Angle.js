@@ -1,5 +1,5 @@
 const lineColor = "blue";
-const angleTextColor = "white";
+const angleTextColor = "orange";
 const font = "bold 15px Arial";
 
 class Angle {
@@ -29,58 +29,22 @@ class Angle {
     const tolerance = 5;
     for (const line of clickedPoints.slice(0, -1)) {
       const start = line;
-      if (pointOnLine(mousePos, start, tolerance)) {
-        return { start };
+      const end = clickedPoints[clickedPoints.indexOf(line) + 1];
+      if (pointOnLine(mousePos, start, end, tolerance)) {
+        return { start, end };
       }
-    }
-  };
-
-  handleAngleClick = (
-    { x, y },
-    angleCoordinates,
-    setAngleCoordinates,
-    anglePoints
-  ) => {
-    if (anglePoints.length % 3 === 0) {
-      const newAngleObject = { id: new Date().getTime(), points: [{ x, y }] };
-      setAngleCoordinates([...angleCoordinates, newAngleObject]);
-    } else {
-      const updatedAnglePoints = [...angleCoordinates];
-      const lastObject = updatedAnglePoints[updatedAnglePoints.length - 1];
-      lastObject.points.push({ x, y });
-      setAngleCoordinates(updatedAnglePoints);
     }
   };
 }
 
-// const pointOnAngle = (mousePos, angle) => {
-//   const distance =
-//     Math.abs(
-//       (line.end.y - line.start.y) * point.x -
-//         (line.end.x - line.start.x) * point.y +
-//         line.end.x * line.start.y -
-//         line.end.y * line.start.x
-//     ) /
-//     Math.sqrt(
-//       Math.pow(line.end.y - line.start.y, 2) +
-//         Math.pow(line.end.x - line.start.x, 2)
-//     );
-
-//   return distance < tolerance;
-// };
-
-const pointOnLine = (point, line, tolerance) => {
+const pointOnLine = (point, start, end, tolerance) => {
   const distance =
     Math.abs(
-      (line.end.y - line.start.y) * point.x -
-        (line.end.x - line.start.x) * point.y +
-        line.end.x * line.start.y -
-        line.end.y * line.start.x
-    ) /
-    Math.sqrt(
-      Math.pow(line.end.y - line.start.y, 2) +
-        Math.pow(line.end.x - line.start.x, 2)
-    );
+      (end.y - start.y) * point.x -
+        (end.x - start.x) * point.y +
+        end.x * start.y -
+        end.y * start.x
+    ) / Math.sqrt(Math.pow(end.y - start.y, 2) + Math.pow(end.x - start.x, 2));
   return distance < tolerance;
 };
 
@@ -92,4 +56,4 @@ const calculateAngle = (pointA, pointB, pointC) => {
   return angleDegrees < 0 ? angleDegrees + 360 : angleDegrees;
 };
 
-export default Angle
+export default Angle;

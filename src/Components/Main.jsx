@@ -5,7 +5,7 @@ import Lines from "../Functions/Line";
 import Angles from "../Functions/Angle";
 import Circles from "../Functions/Circle";
 import Rectangles from "../Functions/Rectangle";
-import { data } from "dcmjs";
+import { data, log } from "dcmjs";
 
 function Main() {
   const canvasRef = useRef(null);
@@ -15,7 +15,6 @@ function Main() {
   const [circlePoints, setCirclePoints] = useState([]);
   const [rectanglePoints, setRectanglePoints] = useState([]);
   const [anglePoints, setAnglePoints] = useState([]);
-  const [angleCoordinates, setAngleCoordinates] = useState([]);
   const [pixelValues, setPixelValues] = useState([]);
 
   const [selectedShape, setSelectedShape] = useState("Line");
@@ -27,7 +26,6 @@ function Main() {
   const rectangleInstance = new Rectangles();
 
   useEffect(() => {
-    console.log(linePoints.length);
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
@@ -43,21 +41,15 @@ function Main() {
       }
     }
 
-
     anglePoints.forEach((point) =>
       pointsInstance.drawPoints(ctx, point.x, point.y)
     );
-
-    if (angleCoordinates.length >= 1) {
-      for (let i = 0; i < angleCoordinates.length; i = i + 1) {
-        const currentAngle = angleCoordinates[i];
-        const points = currentAngle.points;
-        if (points.length >= 3) {
-          const startPoint = points[0];
-          const endPoint1 = points[1];
-          const endPoint2 = points[2];
-          anglesInstance.drawAngles(ctx, startPoint, endPoint1, endPoint2);
-        }
+    if (anglePoints.length >= 3) {
+      for (let i = 0; i < anglePoints.length - 1; i = i + 3) {
+        const startPoint = anglePoints[i];
+        const endPoint1 = anglePoints[i + 1];
+        const endPoint2 = anglePoints[i + 2];
+        anglesInstance.drawAngles(ctx, startPoint, endPoint1, endPoint2);
       }
     }
 
@@ -86,13 +78,34 @@ function Main() {
         rectangleInstance.drawRectangle(ctx, startPoint, endPoint);
       }
     }
-  }, [
-    linePoints,
-    anglePoints,
-    circlePoints,
-    angleCoordinates,
-    rectanglePoints,
-  ]);
+  }, [linePoints, anglePoints, circlePoints, rectanglePoints]);
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    if (file) {
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const newDicomDict = data.DicomMessage.readFile(arrayBuffer);
+        setPatientName(newDicomDict.dict["00100010"]?.Value[0]?.Alphabetic);
+        const pixelData = newDicomDict.dict["7FE00010"]?.Value[0];
+        setPixelValues(pixelData);
+        console.log("pixel spacing = ");
+        console.log(newDicomDict.dict["00280010"].Value);
+        if (pixelData) {
+          const image = new Image();
+          image.src = arrayBufferToBase64(pixelData);
+          image.onload = () => {
+            context.drawImage(image, 0, 0);
+          };
+        }
+      } catch (err) {
+        console.log("error parsing dicom");
+        console.log(err);
+      }
+    }
+  };
 
   const handleCanvasClick = (event) => {
     const canvas = canvasRef.current;
@@ -119,24 +132,16 @@ function Main() {
       case "Angle":
         const clickedAngle = anglesInstance.findClickedAngle(
           { x, y },
-          angleCoordinates
+          anglePoints
         );
-
         if (clickedAngle) {
           if (window.confirm("Do you want to delete the angle?")) {
-            const updatedAngles = angleCoordinates.filter((angle) => {
-              return angle.id !== clickedAngle.id;
-            });
-            setAngleCoordinates(updatedAngles);
+            setAnglePoints([]);
           }
         } else {
-          setAnglePoints((points) => [...points, { x, y }]);
-          anglesInstance.handleAngleClick(
-            { x, y },
-            angleCoordinates,
-            setAngleCoordinates,
-            anglePoints
-          );
+          if (anglePoints.length <= 2) {
+            setAnglePoints([...anglePoints, { x, y }]);
+          }
         }
         break;
 
@@ -191,33 +196,6 @@ function Main() {
     }
   };
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
-    if (file) {
-      try {
-        const arrayBuffer = await file.arrayBuffer();
-        const newDicomDict = data.DicomMessage.readFile(arrayBuffer);
-        setPatientName(newDicomDict.dict["00100010"]?.Value[0]?.Alphabetic);
-        const pixelData = newDicomDict.dict["7FE00010"]?.Value[0];
-        setPixelValues(pixelData);
-        console.log("pixel spacing = ");
-        console.log(newDicomDict.dict["00280010"].Value);
-        if (pixelData) {
-          const image = new Image();
-          image.src = arrayBufferToBase64(pixelData);
-          image.onload = () => {
-            context.drawImage(image, 0, 0);
-          };
-        }
-      } catch (err) {
-        console.log("error parsing dicom");
-        console.log(err);
-      }
-    }
-  };
-
   const arrayBufferToBase64 = (buffer) => {
     const binary = new Uint8Array(buffer);
     return "data:image/png;base64," + btoa(String.fromCharCode(...binary));
@@ -231,15 +209,15 @@ function Main() {
     <div>
       <input type="file" onChange={handleFileChange} />
       <h1>Patient Name : {patientName}</h1>
+      <PrimaryShapeButton
+        handleShapeSelection={handleShapeSelection}
+        selectedShape={selectedShape}
+      />
       <canvas
         onClick={handleCanvasClick}
         ref={canvasRef}
         width={500}
         height={500}
-      />
-      <PrimaryShapeButton
-        handleShapeSelection={handleShapeSelection}
-        selectedShape={selectedShape}
       />
     </div>
   );
