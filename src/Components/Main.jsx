@@ -27,12 +27,13 @@ function Main() {
   const rectangleInstance = new Rectangles();
 
   useEffect(() => {
+    console.log(linePoints.length);
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
-    linePoints.forEach((point) =>
-      pointsInstance.drawPoints(ctx, point.x, point.y)
-    );
+    linePoints.forEach((point) => {
+      pointsInstance.drawPoints(ctx, point.x, point.y);
+    });
 
     if (linePoints.length >= 2) {
       for (let i = 0; i < linePoints.length - 1; i = i + 2) {
@@ -42,11 +43,11 @@ function Main() {
       }
     }
 
-    console.log(linePoints);
 
     anglePoints.forEach((point) =>
       pointsInstance.drawPoints(ctx, point.x, point.y)
     );
+
     if (angleCoordinates.length >= 1) {
       for (let i = 0; i < angleCoordinates.length; i = i + 1) {
         const currentAngle = angleCoordinates[i];
@@ -85,7 +86,6 @@ function Main() {
         rectangleInstance.drawRectangle(ctx, startPoint, endPoint);
       }
     }
-
   }, [
     linePoints,
     anglePoints,
@@ -104,12 +104,12 @@ function Main() {
         const clickedLine = linesInstance.findClickedLine({ x, y }, linePoints);
         if (clickedLine) {
           if (window.confirm("Do you want to delete the line?")) {
-            // const updatedLinePoints = linePoints.filter(
-            //   (points) =>
-            //     points !== clickedLine.start && points !== clickedLine.end
-            // );
-            // setLinePoints(updatedLinePoints);
-            setLinePoints([]);
+            const updatedLinePoints = linePoints.filter(
+              (points) =>
+                points !== clickedLine.start && points !== clickedLine.end
+            );
+            setLinePoints(updatedLinePoints);
+            // setLinePoints([]);
           }
         } else {
           setLinePoints([...linePoints, { x, y }]);
@@ -159,7 +159,32 @@ function Main() {
         break;
 
       case "Rectangle":
-        setRectanglePoints([...rectanglePoints, { x, y }]);
+        const clickedRectangle = rectangleInstance.findClickedRectangle(
+          { x, y },
+          rectanglePoints
+        );
+        if (clickedRectangle) {
+          // toggle between 0,45,90,135,180,...
+          const newRotation = (clickedRectangle.rotation + 45) % 360;
+          const rotatedRectangle = rectangleInstance.rotateRectangle(
+            clickedRectangle.startPoint,
+            clickedRectangle.endPoint,
+            newRotation
+          );
+          const updatedRectangles = rectanglePoints.map((point) => {
+            if (point === clickedRectangle.startPoint) {
+              return { ...rotatedRectangle[0], rotation: newRotation };
+            } else if (point === clickedRectangle.endPoint) {
+              return {
+                ...rotatedRectangle[1],
+                rotation: newRotation,
+              };
+            }
+          });
+          setRectanglePoints(updatedRectangles);
+        } else {
+          setRectanglePoints([...rectanglePoints, { x, y }]);
+        }
         break;
       default:
         break;
@@ -168,6 +193,8 @@ function Main() {
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
     if (file) {
       try {
         const arrayBuffer = await file.arrayBuffer();
@@ -181,8 +208,6 @@ function Main() {
           const image = new Image();
           image.src = arrayBufferToBase64(pixelData);
           image.onload = () => {
-            const canvas = canvasRef.current;
-            const context = canvas.getContext("2d");
             context.drawImage(image, 0, 0);
           };
         }
@@ -211,7 +236,7 @@ function Main() {
         ref={canvasRef}
         width={500}
         height={500}
-      ></canvas>
+      />
       <PrimaryShapeButton
         handleShapeSelection={handleShapeSelection}
         selectedShape={selectedShape}
