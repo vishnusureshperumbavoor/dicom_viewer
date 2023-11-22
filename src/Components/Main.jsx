@@ -49,6 +49,9 @@ function Main() {
       }
     }
 
+    console.log("circlepoints");
+    console.log(circlePoints);
+
     circlePoints.forEach((point, index) => {
       if (index % 2 === 0) {
         pointsInstance.drawPoints(ctx, point.x, point.y);
@@ -63,7 +66,10 @@ function Main() {
       }
     }
 
-    rectanglePoints.forEach((point) => {
+    // console.log("rectangle points");
+    // console.log(rectanglePoints);
+
+    rectanglePoints.forEach((point, index) => {
       pointsInstance.drawPoints(ctx, point.x, point.y);
     });
 
@@ -78,6 +84,7 @@ function Main() {
 
   const handleFileChange = async (e) => {
     const canvas = canvasRef.current;
+    // const imageCanvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     const file = e.target.files[0];
     if (file) {
@@ -102,7 +109,6 @@ function Main() {
 
   const handleCanvasClick = (event) => {
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
@@ -157,22 +163,22 @@ function Main() {
         break;
 
       case "Rectangle":
-        const clickedRectangle = rectangleInstance.findClickedRectangle(
+        const clickedCorner = rectangleInstance.findClickedCorner(
           { x, y },
           rectanglePoints
         );
-        if (clickedRectangle) {
-          const angle = calculateRotationAngle(clickedRectangle.startPoint, {
-            x,
-            y,
-          });
-          setRotationAngle(angle);
-          rectangleInstance.rotateRectangle(
-            ctx,
-            clickedRectangle.startPoint,
-            clickedRectangle.endPoint,
-            rotationAngle
+        if (clickedCorner) {
+          const { corner, rectangle } = clickedCorner;
+          const rotationAngle = (45 * Math.PI) / 180;
+          const rotatedRectangle = rectangleInstance.rotateRectangle(
+            rectangle,
+            (rotationAngle * Math.PI) / 180,
+            corner
           );
+          setRectanglePoints([
+            rotatedRectangle.startPoint,
+            rotatedRectangle.endPoint,
+          ]);
         } else {
           setRectanglePoints([...rectanglePoints, { x, y }]);
         }
@@ -189,19 +195,6 @@ function Main() {
 
   const handleShapeSelection = (shape) => {
     setSelectedShape(shape);
-  };
-
-  const snapTo45DegreeInterval = (angle) => {
-    const snappedAngle = Math.round(angle / 45) * 45;
-    return snappedAngle;
-  };
-
-  const calculateRotationAngle = (start, currentMousePos) => {
-    const deltaX = currentMousePos.x - start.x;
-    const deltaY = currentMousePos.y - start.y;
-    const angleInRadians = Math.atan2(deltaY, deltaX);
-    const angleInDegrees = (angleInRadians * 180) / Math.PI;
-    return angleInDegrees;
   };
 
   return (

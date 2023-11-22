@@ -31,32 +31,6 @@ class Rectangle {
     ctx.fillText(text, textX, textY);
   };
 
-  rotateRectangle = (ctx, start, end, angle) => {
-    const cosTheta = Math.cos(angle);
-    const sinTheta = Math.sin(angle);
-    const translatedStart = { x: start.x - end.x, y: start.y - end.y };
-    const translatedEnd = { x: 0, y: 0 };
-
-    // apply rotation
-    const rotatedStart = {
-      x: translatedStart.x * cosTheta - translatedStart.y * sinTheta,
-      y: translatedStart.x * sinTheta + translatedStart.y * cosTheta,
-    };
-    const rotatedEnd = {
-      x: translatedEnd.x * cosTheta - translatedEnd.y * sinTheta,
-      y: translatedEnd.x * sinTheta + translatedEnd.y * cosTheta,
-    };
-    const finalStart = {
-      x: rotatedStart.x + end.x,
-      y: rotatedStart.y + end.y,
-    };
-    const finalEnd = {
-      x: rotatedEnd.x + end.x,
-      y: rotatedEnd.y + end.y,
-    };
-    this.drawRectangle(ctx, finalStart, finalEnd);
-  };
-
   findClickedRectangle = (mousePos, rectanglePoints) => {
     for (let i = 0; i < rectanglePoints.length - 1; i += 2) {
       const startPoint = rectanglePoints[i];
@@ -79,19 +53,12 @@ class Rectangle {
     return null;
   };
 
-  rotatePoint = (point, center, angle) => {
-    const radians = (angle * Math.PI) / 180;
-    const cosTheta = Math.cos(radians);
-    const sinTheta = Math.sin(radians);
-    const x =
-      cosTheta * (point.x - center.x) -
-      sinTheta * (point.y - center.y) +
-      center.x;
-    const y =
-      sinTheta * (point.x - center.x) -
-      cosTheta * (point.y - center.y) +
-      center.y;
-    return { x, y };
+  rotatePoint = (point, angle) => {
+    const cosTheta = Math.cos(angle);
+    const sinTheta = Math.sin(angle);
+    const xPrime = cosTheta * point.x - sinTheta * point.y;
+    const yPrime = sinTheta * point.x + cosTheta * point.y;
+    return { x: xPrime, y: yPrime };
   };
 
   drawRotatedAngle = (ctx, startPoint, endPoint, angle) => {
@@ -104,6 +71,60 @@ class Rectangle {
     const height = Math.abs(endPoint.y - startPoint.y);
     ctx.fillRect(-width / 2, -height / 2, width, height);
     ctx.restore();
+  };
+
+  findClickedCorner = (mousePos, rectanglePoints) => {
+    const tolerance = 5;
+    for (let i = 0; i < rectanglePoints.length - 1; i += 2) {
+      const startPoint = rectanglePoints[i];
+      const endPoint = rectanglePoints[i + 1];
+      const corners = [
+        { x: startPoint.x, y: startPoint.y },
+        { x: endPoint.x, y: startPoint.y },
+        { x: endPoint.x, y: endPoint.y },
+        { x: startPoint.x, y: endPoint.y },
+      ];
+      const clickedCorner = corners.find((corner) => {
+        const distance = Math.sqrt(
+          Math.pow(mousePos.x - corner.x, 2) +
+            Math.pow(mousePos.y - corner.y, 2)
+        );
+        return distance <= tolerance;
+      });
+      if (clickedCorner) {
+        return { corner: clickedCorner, rectangle: { startPoint, endPoint } };
+      }
+    }
+    return null;
+  };
+
+  rotateRectangle = ({ startPoint, endPoint }, angle, pivot) => {
+    const cosTheta = Math.cos(angle);
+    const sinTheta = Math.sin(angle);
+
+    const rotatedStartPoint = {
+      x:
+        cosTheta * (startPoint.x - pivot.x) -
+        sinTheta * (startPoint.y - pivot.y) +
+        pivot.x,
+      y:
+        sinTheta * (startPoint.x - pivot.x) +
+        cosTheta * (startPoint.y - pivot.y) +
+        pivot.y,
+    };
+
+    const rotatedEndPoint = {
+      x:
+        cosTheta * (endPoint.x - pivot.x) -
+        sinTheta * (endPoint.y - pivot.y) +
+        pivot.x,
+      y:
+        sinTheta * (endPoint.x - pivot.x) +
+        cosTheta * (endPoint.y - pivot.y) +
+        pivot.y,
+    };
+
+    return { startPoint: rotatedStartPoint, endPoint: rotatedEndPoint };
   };
 }
 
