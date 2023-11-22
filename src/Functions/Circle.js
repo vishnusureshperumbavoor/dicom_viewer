@@ -7,9 +7,14 @@ const statsColor = "red";
 class Circle {
   drawCircle = (ctx, start, end) => {
     // calculate radius
-    const radius = Math.sqrt(
-      Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
-    );
+    const radius = this.findRadius(start, end);
+    // draw circle
+    ctx.beginPath();
+    ctx.arc(start.x, start.y, radius, 0, 2 * Math.PI);
+    ctx.strokeStyle = circleColor;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.closePath();
 
     // pixels within the circle
     const imageData = ctx.getImageData(
@@ -23,14 +28,6 @@ class Circle {
     for (let i = 0; i < pixelsWithinCircle.length; i += 4) {
       selectedPixelValues.push(pixelsWithinCircle[i]);
     }
-
-    // draw circle
-    ctx.beginPath();
-    ctx.arc(start.x, start.y, radius, 0, 2 * Math.PI);
-    ctx.strokeStyle = circleColor;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.closePath();
 
     // area
     const area = Math.PI * Math.pow(radius, 2);
@@ -71,14 +68,32 @@ class Circle {
     this.drawLines(ctx, start, end);
   };
 
-  findClickedCircle = (mousePos, clickedPoints) => {
-    for (const line of clickedPoints.slice(0, -1)) {
-      const start = line;
-      const end = clickedPoints[clickedPoints.indexOf(line) + 1];
-      if (pointOnCircle(mousePos, { start, end }, 5)) {
-        return { start, end };
+  findRadius = (start, end) => {
+    return Math.sqrt(
+      Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
+    );
+  };
+
+  findClickedCircle = (mousePos, circlePoints) => {
+    const tolerance = 10;
+    for (let i = 0; i < circlePoints.length - 1; i += 2) {
+      const startPoint = circlePoints[i];
+      const endPoint = circlePoints[i + 1];
+
+      const center = {
+        x: (startPoint.x + endPoint.x) / 2,
+        y: (startPoint.y + endPoint.y) / 2,
+      };
+
+      const radius = this.findRadius(center, endPoint);
+      const distanceToCenter = Math.sqrt(
+        Math.pow(mousePos.x - center.x, 2) + Math.pow(mousePos.y - center.y, 2)
+      );
+      if (distanceToCenter <= radius + tolerance) {
+        return { start: startPoint, end: endPoint };
       }
     }
+    return null;
   };
 
   drawLines = (ctx, start, end) => {
@@ -119,21 +134,5 @@ class Circle {
     return Math.sqrt(dx * dx + dy * dy);
   };
 }
-
-const pointOnCircle = (point, line, tolerance) => {
-  const distance =
-    Math.abs(
-      (line.end.y - line.start.y) * point.x -
-        (line.end.x - line.start.x) * point.y +
-        line.end.x * line.start.y -
-        line.end.y * line.start.x
-    ) /
-    Math.sqrt(
-      Math.pow(line.end.y - line.start.y, 2) +
-        Math.pow(line.end.x - line.start.x, 2)
-    );
-
-  return distance < tolerance;
-};
 
 export default Circle;

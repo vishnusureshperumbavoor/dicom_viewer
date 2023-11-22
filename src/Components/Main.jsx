@@ -24,8 +24,6 @@ function Main() {
   const [selectedShape, setSelectedShape] = useState("Line");
   const [rotationAngle, setRotationAngle] = useState(0);
 
-  
-
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -55,18 +53,18 @@ function Main() {
             anglesInstance.drawAngles(ctx, startPoint, endPoint1, endPoint2);
           }
         }
+
+        console.log(circlePoints);
         circlePoints.forEach((point, index) => {
           if (index % 2 === 0) {
             pointsInstance.drawPoints(ctx, point.x, point.y);
           }
         });
 
-        if (circlePoints.length % 2 === 0) {
-          for (let i = 0; i < circlePoints.length - 1; i = i + 2) {
-            const startPoint = circlePoints[i];
-            const endPoint = circlePoints[i + 1];
-            circlesInstance.drawCircle(ctx, startPoint, endPoint);
-          }
+        for (let i = 0; i < circlePoints.length - 1; i = i + 2) {
+          const startPoint = circlePoints[i];
+          const endPoint = circlePoints[i + 1];
+          circlesInstance.drawCircle(ctx, startPoint, endPoint);
         }
         rectanglePoints.forEach((point, index) => {
           pointsInstance.drawPoints(ctx, point.x, point.y);
@@ -81,7 +79,6 @@ function Main() {
         }
       };
     }
-    
   }, [pixelData, linePoints, anglePoints, circlePoints, rectanglePoints]);
 
   const handleFileChange = async (e) => {
@@ -138,6 +135,7 @@ function Main() {
         break;
 
       case "Circle":
+        console.log({x,y},circlePoints);
         const clickedCircle = circlesInstance.findClickedCircle(
           { x, y },
           circlePoints
