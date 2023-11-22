@@ -15,6 +15,7 @@ const rectangleInstance = new Rectangles();
 
 function Main() {
   const canvasRef = useRef(null);
+  const [pixelData, setPixelData] = useState(null);
   const [patientName, setPatientName] = useState("");
   const [linePoints, setLinePoints] = useState([]);
   const [circlePoints, setCirclePoints] = useState([]);
@@ -23,69 +24,67 @@ function Main() {
   const [selectedShape, setSelectedShape] = useState("Line");
   const [rotationAngle, setRotationAngle] = useState(0);
 
+  
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
+    if (pixelData) {
+      const image = new Image();
+      image.src = arrayBufferToBase64(pixelData);
+      image.onload = () => {
+        ctx.drawImage(image, 0, 0);
+        linePoints.forEach((point) => {
+          linesInstance.drawLinePoints(ctx, point.x, point.y);
+        });
 
-    linePoints.forEach((point) => {
-      linesInstance.drawLinePoints(ctx, point.x, point.y);
-    });
+        for (let i = 0; i < linePoints.length - 1; i = i + 2) {
+          const startPoint = linePoints[i];
+          const endPoint = linePoints[i + 1];
+          linesInstance.drawLines(ctx, startPoint, endPoint);
+        }
 
-    for (let i = 0; i < linePoints.length - 1; i = i + 2) {
-      const startPoint = linePoints[i];
-      const endPoint = linePoints[i + 1];
-      linesInstance.drawLines(ctx, startPoint, endPoint);
+        anglePoints.forEach((point) =>
+          pointsInstance.drawPoints(ctx, point.x, point.y)
+        );
+        if (anglePoints.length >= 3) {
+          for (let i = 0; i < anglePoints.length - 1; i = i + 3) {
+            const startPoint = anglePoints[i];
+            const endPoint1 = anglePoints[i + 1];
+            const endPoint2 = anglePoints[i + 2];
+            anglesInstance.drawAngles(ctx, startPoint, endPoint1, endPoint2);
+          }
+        }
+        circlePoints.forEach((point, index) => {
+          if (index % 2 === 0) {
+            pointsInstance.drawPoints(ctx, point.x, point.y);
+          }
+        });
+
+        if (circlePoints.length % 2 === 0) {
+          for (let i = 0; i < circlePoints.length - 1; i = i + 2) {
+            const startPoint = circlePoints[i];
+            const endPoint = circlePoints[i + 1];
+            circlesInstance.drawCircle(ctx, startPoint, endPoint);
+          }
+        }
+        rectanglePoints.forEach((point, index) => {
+          pointsInstance.drawPoints(ctx, point.x, point.y);
+        });
+
+        if (rectanglePoints.length >= 2) {
+          for (let i = 0; i < rectanglePoints.length - 1; i = i + 2) {
+            const startPoint = rectanglePoints[i];
+            const endPoint = rectanglePoints[i + 1];
+            rectangleInstance.drawRectangle(ctx, startPoint, endPoint);
+          }
+        }
+      };
     }
-
-    anglePoints.forEach((point) =>
-      pointsInstance.drawPoints(ctx, point.x, point.y)
-    );
-    if (anglePoints.length >= 3) {
-      for (let i = 0; i < anglePoints.length - 1; i = i + 3) {
-        const startPoint = anglePoints[i];
-        const endPoint1 = anglePoints[i + 1];
-        const endPoint2 = anglePoints[i + 2];
-        anglesInstance.drawAngles(ctx, startPoint, endPoint1, endPoint2);
-      }
-    }
-
-    console.log("circlepoints");
-    console.log(circlePoints);
-
-    circlePoints.forEach((point, index) => {
-      if (index % 2 === 0) {
-        pointsInstance.drawPoints(ctx, point.x, point.y);
-      }
-    });
-
-    if (circlePoints.length % 2 === 0) {
-      for (let i = 0; i < circlePoints.length - 1; i = i + 2) {
-        const startPoint = circlePoints[i];
-        const endPoint = circlePoints[i + 1];
-        circlesInstance.drawCircle(ctx, startPoint, endPoint);
-      }
-    }
-
-    // console.log("rectangle points");
-    // console.log(rectanglePoints);
-
-    rectanglePoints.forEach((point, index) => {
-      pointsInstance.drawPoints(ctx, point.x, point.y);
-    });
-
-    if (rectanglePoints.length >= 2) {
-      for (let i = 0; i < rectanglePoints.length - 1; i = i + 2) {
-        const startPoint = rectanglePoints[i];
-        const endPoint = rectanglePoints[i + 1];
-        rectangleInstance.drawRectangle(ctx, startPoint, endPoint);
-      }
-    }
-  }, [linePoints, anglePoints, circlePoints, rectanglePoints]);
+    
+  }, [pixelData, linePoints, anglePoints, circlePoints, rectanglePoints]);
 
   const handleFileChange = async (e) => {
-    const canvas = canvasRef.current;
-    // const imageCanvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
     const file = e.target.files[0];
     if (file) {
       try {
@@ -93,13 +92,7 @@ function Main() {
         const newDicomDict = data.DicomMessage.readFile(arrayBuffer);
         setPatientName(newDicomDict.dict["00100010"]?.Value[0]?.Alphabetic);
         const pixelData = newDicomDict.dict["7FE00010"]?.Value[0];
-        if (pixelData) {
-          const image = new Image();
-          image.src = arrayBufferToBase64(pixelData);
-          image.onload = () => {
-            ctx.drawImage(image, 0, 0);
-          };
-        }
+        setPixelData(pixelData);
       } catch (err) {
         console.log("error parsing dicom");
         console.log(err);
